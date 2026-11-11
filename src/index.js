@@ -9,6 +9,7 @@ import { isValidPersona, PERSONAS, buildSessionCookie, buildClearCookie } from '
 import { COMPANY } from './lib/seed-data.js';
 import * as helpdesk from './helpdesk.js';
 import * as assets from './assets.js';
+import * as directory from './directory.js';
 
 // [메서드, 경로 패턴, 처리 함수]. 경로의 :id 는 숫자만 받는다.
 const ROUTE_TABLE = [
@@ -37,6 +38,14 @@ const ROUTE_TABLE = [
   ['POST', '/api/assets/:id/return', assets.handleAssetReturn],
   ['POST', '/api/assets/:id/status', assets.handleAssetStatus],
   ['GET', '/api/licenses', assets.handleLicenses],
+  // 4단계 가상 AD 디렉터리 (IT 담당자 전용)
+  ['GET', '/api/directory/meta', directory.handleDirMeta],
+  ['GET', '/api/directory/tree', directory.handleDirTree],
+  ['GET', '/api/directory/users', directory.handleDirUsers],
+  ['GET', '/api/directory/users/:id', directory.handleDirUser],
+  ['POST', '/api/directory/users/:id/logon-test', directory.handleLogonTest],
+  ['POST', '/api/directory/operations', directory.handleDirOperationCreate],
+  ['GET', '/api/directory/operations/:id', directory.handleDirOperation],
 ];
 
 // '/api/tickets/:id' → /^\/api\/tickets\/(?<id>\d+)$/

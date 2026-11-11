@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>디렉터리 · 도담테크산업 IT 운영 포털 (시뮬레이션)</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="sim-banner" role="note">
+    <strong>시뮬레이션</strong>
+    가상 회사 ‘도담테크산업’의 데모입니다. 실제 회사·인물·시스템과 관계없으며, 데이터는 매일 04:30(KST)에 초기화됩니다.
+  </div>
+
+  <header class="topbar">
+    <div class="brand">도담테크산업 <span>IT 운영 포털</span></div>
+    <nav class="mainnav" aria-label="주 메뉴">
+      <a href="/app" data-nav="home">홈</a>
+      <a href="/tickets" data-nav="tickets">헬프데스크</a>
+      <a href="/faq" data-nav="faq">FAQ</a>
+      <a href="/assets" data-nav="assets" data-it-only hidden>자산</a>
+      <a href="/licenses" data-nav="licenses" data-it-only hidden>라이선스</a>
+      <a href="/directory" data-nav="directory" data-it-only hidden>디렉터리</a>
+    </nav>
+    <div class="user">
+      <span id="user-info" class="muted">불러오는 중…</span>
+      <button type="button" id="logout" class="link-button">로그아웃</button>
+    </div>
+  </header>
+
+  <main class="content wide">
+    <div class="page-head">
+      <h2>가상 AD 디렉터리 <span class="muted small" id="domain"></span></h2>
+      <button type="button" class="button primary" id="toggle-create">계정 생성</button>
+    </div>
+    <p class="muted small">
+      실제 Active Directory 가 아닌 가상 디렉터리입니다. 작업을 실행하면 이 디렉터리만 바뀌고,
+      실제 환경용 PowerShell 스크립트는 <strong>미실행</strong> 상태로 만들어집니다.
+    </p>
+    <p id="page-error" class="error" role="alert" hidden></p>
+
+    <section class="card" id="create-card" hidden>
+      <h3>계정 생성 <span class="muted small">(New-ADUser)</span></h3>
+      <form id="create-form" class="form-grid" novalidate>
+        <label>이름 (CN·표시 이름) <input name="displayName" maxlength="64" required placeholder="홍길동"></label>
+        <label>부서 OU <select name="ouKey" required></select></label>
+        <label>직급 <input name="title" maxlength="30" placeholder="사원"></label>
+        <label>사번 (employeeID) <input name="employeeId" maxlength="7" placeholder="DT-0041"></label>
+        <label>영문 성 (선택) <input name="surnameEn" maxlength="30" placeholder="비우면 자동: Hong"></label>
+        <label>영문 이름 (선택) <input name="givenNameEn" maxlength="30" placeholder="비우면 자동: Gil-dong"></label>
+        <label>계정명 직접 지정 (선택) <input name="sam" maxlength="20" placeholder="비우면 규칙대로: gdhong"></label>
+        <div class="form-actions">
+          <button type="submit" class="button primary">생성 (스크립트 만들기)</button>
+        </div>
+      </form>
+      <p class="muted small">계정명 규칙: 영문 이름 머리글자 + 성 (홍길동 → gdhong). 이미 있으면 숫자를 붙입니다 (gdhong2). 초기 비밀번호는 스크립트에 넣지 않습니다.</p>
+      <p id="create-error" class="error" role="alert" hidden></p>
+    </section>
+
+    <div class="dir-layout">
+      <aside class="card dir-tree">
+        <h3>OU 트리</h3>
+        <ul id="tree" class="tree"></ul>
+      </aside>
+
+      <section class="stack">
+        <form id="filters" class="filters">
+          <label>상태 <select name="state">
+            <option value="">전체</option>
+            <option value="ENABLED">활성</option>
+            <option value="DISABLED">비활성</option>
+            <option value="LOCKED">잠김</option>
+          </select></label>
+          <label class="grow">검색 <input type="search" name="q" maxlength="64" placeholder="계정명·이름·UPN·사번"></label>
+          <button type="submit" class="button">조회</button>
+        </form>
+        <p id="list-title" class="muted"></p>
+        <div class="table-wrap"><table id="user-table" class="tickets"></table></div>
+      </section>
+    </div>
+  </main>
+
+  <script type="module" src="/js/directory.js"></script>
+</body>
+</html>

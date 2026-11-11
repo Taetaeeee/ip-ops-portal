@@ -6,6 +6,7 @@
 import { generateSeedData } from './lib/seed-data.js';
 import { generateDemoTickets } from './lib/seed-tickets.js';
 import { generateDemoAssets } from './lib/seed-assets.js';
+import { generateDirectory } from './lib/seed-directory.js';
 import { buildResetStatements } from './lib/reset-plan.js';
 import { SLA_CONFIG } from './lib/sla-config.js';
 
@@ -20,7 +21,9 @@ export async function runReset(env, triggerType, now = new Date()) {
   const inventory = generateDemoAssets({ employees: data.employees, now });
   // 데모 티켓은 초기화 시각 기준 상대 시각으로 만든다 (매일 같은 SLA 분포). 관련 자산도 연결
   const helpdesk = generateDemoTickets({ now, cfg: SLA_CONFIG, assets: inventory });
-  const statements = buildResetStatements(data, helpdesk, inventory);
+  // 가상 AD 디렉터리 (재직자 40명 + 퇴사자 2 + 서비스 계정 3)
+  const directory = generateDirectory({ employees: data.employees, now });
+  const statements = buildResetStatements(data, helpdesk, inventory, directory);
 
   let result;
   try {
@@ -32,6 +35,7 @@ export async function runReset(env, triggerType, now = new Date()) {
       tickets: helpdesk.tickets.length,
       assets: inventory.assets.length,
       licenses: inventory.licenses.length,
+      directoryUsers: directory.users.length,
     };
   } catch (err) {
     console.error('데모 초기화 실패', err);

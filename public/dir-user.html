@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>계정 상세 · 도담테크산업 IT 운영 포털 (시뮬레이션)</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="sim-banner" role="note">
+    <strong>시뮬레이션</strong>
+    가상 회사 ‘도담테크산업’의 데모입니다. 실제 회사·인물·시스템과 관계없으며, 데이터는 매일 04:30(KST)에 초기화됩니다.
+  </div>
+
+  <header class="topbar">
+    <div class="brand">도담테크산업 <span>IT 운영 포털</span></div>
+    <nav class="mainnav" aria-label="주 메뉴">
+      <a href="/app" data-nav="home">홈</a>
+      <a href="/tickets" data-nav="tickets">헬프데스크</a>
+      <a href="/faq" data-nav="faq">FAQ</a>
+      <a href="/assets" data-nav="assets" data-it-only hidden>자산</a>
+      <a href="/licenses" data-nav="licenses" data-it-only hidden>라이선스</a>
+      <a href="/directory" data-nav="directory" data-it-only hidden>디렉터리</a>
+    </nav>
+    <div class="user">
+      <span id="user-info" class="muted">불러오는 중…</span>
+      <button type="button" id="logout" class="link-button">로그아웃</button>
+    </div>
+  </header>
+
+  <main class="content">
+    <p><a id="back" href="/directory">← 디렉터리</a></p>
+    <p id="page-error" class="error" role="alert" hidden></p>
+
+    <div id="account" hidden>
+      <div class="ticket-head">
+        <h2 id="title"></h2>
+        <div id="badges"></div>
+      </div>
+
+      <div class="detail-grid">
+        <div class="stack">
+          <section class="card">
+            <h3>속성 <span class="muted small">(실제 AD 속성 이름)</span></h3>
+            <dl id="attrs" class="info attrs"></dl>
+          </section>
+
+          <section class="card">
+            <h3>소속 그룹 (memberOf)</h3>
+            <ul id="groups" class="plain-list"></ul>
+          </section>
+
+          <section class="card">
+            <h3>보안 이벤트 <span class="muted small">(가상, Windows 보안 이벤트 ID)</span></h3>
+            <div class="table-wrap plain"><table id="events"></table></div>
+          </section>
+
+          <section class="card">
+            <h3>최근 작업</h3>
+            <ul id="operations" class="plain-list"></ul>
+          </section>
+        </div>
+
+        <aside class="stack">
+          <section class="card">
+            <h3>계정 작업</h3>
+            <p class="muted small">실행하면 가상 디렉터리 변경 + 스크립트(미실행) + 이벤트가 함께 만들어집니다.</p>
+            <div id="simple-ops" class="op-buttons"></div>
+          </section>
+
+          <section class="card" id="add-group-card">
+            <h3>그룹 추가</h3>
+            <form id="add-group-form" class="inline-form">
+              <select name="group"></select>
+              <button type="submit" class="button">추가</button>
+            </form>
+          </section>
+
+          <section class="card" id="remove-group-card">
+            <h3>그룹 제거</h3>
+            <form id="remove-group-form" class="inline-form">
+              <select name="group"></select>
+              <button type="submit" class="button">제거</button>
+            </form>
+          </section>
+
+          <section class="card">
+            <h3>OU 이동</h3>
+            <form id="move-form" class="inline-form">
+              <select name="ouKey"></select>
+              <button type="submit" class="button">이동</button>
+            </form>
+          </section>
+
+          <section class="card">
+            <h3>로그인 시험 <span class="muted small">(사용자 행동 시뮬레이션)</span></h3>
+            <p class="muted small" id="lockout-policy"></p>
+            <div class="op-buttons">
+              <button type="button" class="button" data-logon="true">올바른 비밀번호로</button>
+              <button type="button" class="button" data-logon="false">틀린 비밀번호로</button>
+            </div>
+            <p id="logon-result" class="logon-result" role="status" hidden></p>
+          </section>
+
+          <p id="action-error" class="error" role="alert" hidden></p>
+        </aside>
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="/js/dir-user.js"></script>
+</body>
+</html>

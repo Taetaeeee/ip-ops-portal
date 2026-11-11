@@ -314,6 +314,75 @@ tr.row-alert td { background: color-mix(in srgb, var(--danger-bg) 45%, transpare
 .unauth-item { padding: 8px 0; border-bottom: 1px solid var(--border); }
 .unauth-item:last-child { border-bottom: none; }
 
+/* ───────── 4단계: 가상 AD 디렉터리 ───────── */
+
+.content.wide { max-width: 1200px; }
+.mono { font-family: ui-monospace, "Cascadia Mono", Consolas, "D2Coding", monospace; }
+.dir-layout { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); margin-top: 12px; }
+@media (min-width: 900px) {
+  .dir-layout { grid-template-columns: 300px minmax(0, 1fr); align-items: start; }
+}
+.dir-tree h3 { margin-top: 0; }
+.tree, .tree ul { list-style: none; margin: 0; padding-left: 14px; }
+.tree { padding-left: 0; font-size: 14px; }
+.tree li { margin: 3px 0; }
+.tree ul { border-left: 1px dashed var(--border); margin-left: 4px; }
+.tree-label { text-decoration: none; color: var(--text); padding: 1px 4px; border-radius: 4px; }
+a.tree-label:hover { background: var(--accent-soft); }
+a.tree-label[aria-current="page"] { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+
+.form-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.form-actions { display: flex; align-items: end; }
+
+.op-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+.button.danger { border-color: var(--danger-text); color: var(--danger-text); }
+.op-confirm { flex-basis: 100%; padding: 10px; border-radius: 6px; background: var(--danger-bg); color: var(--danger-text); }
+.op-confirm p { margin: 0 0 8px; font-size: 14px; }
+.op-confirm .button { margin-right: 6px; }
+
+.acct-enabled { background: var(--ok-bg); color: var(--ok-text); }
+.acct-disabled { background: var(--neutral-bg); color: var(--neutral-text); font-weight: 600; }
+.acct-locked { background: var(--danger-bg); color: var(--danger-text); font-weight: 600; }
+.ev-4725, .ev-4740, .ev-4625, .ev-4729 { background: var(--danger-bg); color: var(--danger-text); }
+.ev-4720, .ev-4722, .ev-4767, .ev-4624, .ev-4728 { background: var(--ok-bg); color: var(--ok-text); }
+.ev-4724, .ev-5139 { background: var(--warn-bg); color: var(--warn-text); }
+
+.attrs dt { font-size: 13px; }
+.logon-result { margin: 10px 0 0; padding: 8px 10px; border-radius: 6px; font-size: 14px; }
+.logon-result.ok { background: var(--ok-bg); color: var(--ok-text); }
+.logon-result.fail { background: var(--danger-bg); color: var(--danger-text); }
+
+.result-steps { display: grid; gap: 16px; }
+.step {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin-right: 4px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 13px;
+}
+.badge.not-executed { background: var(--warn-bg); color: var(--warn-text); font-weight: 700; margin-left: 6px; }
+td.before { color: var(--muted); text-decoration: line-through; }
+td.after { font-weight: 600; }
+
+.script-box { position: relative; }
+.script {
+  margin: 0;
+  padding: 14px;
+  overflow-x: auto;
+  border-radius: 8px;
+  background: #11161c;
+  color: #d7e0ea;
+  font-family: ui-monospace, "Cascadia Mono", Consolas, "D2Coding", monospace;
+  font-size: 13px;
+  line-height: 1.55;
+  white-space: pre;
+}
+.small-button { position: absolute; top: 8px; right: 8px; padding: 3px 10px; font-size: 12px; }
+
 /* FAQ */
 details.faq summary { cursor: pointer; font-weight: 600; }
 details.faq h4 { margin: 12px 0 4px; font-size: 13px; color: var(--muted); }

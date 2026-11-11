@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>작업 결과 · 도담테크산업 IT 운영 포털 (시뮬레이션)</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="sim-banner" role="note">
+    <strong>시뮬레이션</strong>
+    가상 회사 ‘도담테크산업’의 데모입니다. 실제 회사·인물·시스템과 관계없으며, 데이터는 매일 04:30(KST)에 초기화됩니다.
+  </div>
+
+  <header class="topbar">
+    <div class="brand">도담테크산업 <span>IT 운영 포털</span></div>
+    <nav class="mainnav" aria-label="주 메뉴">
+      <a href="/app" data-nav="home">홈</a>
+      <a href="/tickets" data-nav="tickets">헬프데스크</a>
+      <a href="/faq" data-nav="faq">FAQ</a>
+      <a href="/assets" data-nav="assets" data-it-only hidden>자산</a>
+      <a href="/licenses" data-nav="licenses" data-it-only hidden>라이선스</a>
+      <a href="/directory" data-nav="directory" data-it-only hidden>디렉터리</a>
+    </nav>
+    <div class="user">
+      <span id="user-info" class="muted">불러오는 중…</span>
+      <button type="button" id="logout" class="link-button">로그아웃</button>
+    </div>
+  </header>
+
+  <main class="content">
+    <p><a id="back" href="/directory">← 계정으로</a></p>
+    <p id="page-error" class="error" role="alert" hidden></p>
+
+    <div id="result" hidden>
+      <div class="ticket-head">
+        <h2 id="title"></h2>
+        <p id="subtitle" class="muted small"></p>
+      </div>
+
+      <div class="result-steps">
+        <section class="card">
+          <h3><span class="step">1</span> 가상 디렉터리 변경</h3>
+          <div class="table-wrap plain"><table id="diff"></table></div>
+          <p id="now-state" class="small"></p>
+          <ul id="notes" class="plain-list small"></ul>
+        </section>
+
+        <section class="card">
+          <h3>
+            <span class="step">2</span> 생성된 PowerShell 스크립트
+            <span class="badge not-executed">미실행</span>
+          </h3>
+          <p class="muted small">실제 AD 에서는 실행되지 않았습니다. 사용자 입력값은 작은따옴표로 감싸고 이스케이프했습니다. 비밀번호는 스크립트에 넣지 않습니다.</p>
+          <div class="script-box">
+            <button type="button" class="button small-button" id="copy">복사</button>
+            <pre id="script" class="script" tabindex="0"></pre>
+          </div>
+        </section>
+
+        <section class="card">
+          <h3><span class="step">3</span> 기록된 보안 이벤트 <span class="muted small">(가상)</span></h3>
+          <div class="table-wrap plain"><table id="events"></table></div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="/js/dir-result.js"></script>
+</body>
+</html>
