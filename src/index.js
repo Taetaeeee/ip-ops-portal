@@ -10,6 +10,8 @@ import { COMPANY } from './lib/seed-data.js';
 import * as helpdesk from './helpdesk.js';
 import * as assets from './assets.js';
 import * as directory from './directory.js';
+import * as lifecycle from './lifecycle.js';
+import { kstToday } from './lib/license-reconcile.js';
 
 // [메서드, 경로 패턴, 처리 함수]. 경로의 :id 는 숫자만 받는다.
 const ROUTE_TABLE = [
@@ -46,6 +48,12 @@ const ROUTE_TABLE = [
   ['POST', '/api/directory/users/:id/logon-test', directory.handleLogonTest],
   ['POST', '/api/directory/operations', directory.handleDirOperationCreate],
   ['GET', '/api/directory/operations/:id', directory.handleDirOperation],
+  // 5단계 입·퇴사 (IT 담당자 전용)
+  ['GET', '/api/lifecycle/cases', lifecycle.handleCaseList],
+  ['POST', '/api/lifecycle/cases', lifecycle.handleCaseCreate],
+  ['GET', '/api/lifecycle/cases/:id', lifecycle.handleCaseDetail],
+  ['POST', '/api/lifecycle/cases/:id/items/:itemId/execute', lifecycle.handleItemExecute],
+  ['PUT', '/api/lifecycle/cases/:id/items/:itemId/assignee', lifecycle.handleItemAssignee],
 ];
 
 // '/api/tickets/:id' → /^\/api\/tickets\/(?<id>\d+)$/
@@ -105,7 +113,9 @@ async function handleOrgSummary(request, env) {
   const session = await getSession(env, request);
   if (!session) return error(401, 'UNAUTHENTICATED', '로그인이 필요합니다');
 
-  const [deptRows, lastReset] = await Promise.all([
+  // 5단계: 인원은 재직자 기준 (입사일이 지났고, 퇴사일이 없거나 오늘 이후. 퇴사일 당일은 근무일)
+  const today = kstToday(new Date());
+  const [deptRows, lastReset, extra] = await Promise.all([
     env.DB.prepare(
       `SELECT s.code AS site_code, s.name AS site_name, s.kind,
               d.code AS dept_code, d.name AS dept_name,
@@ -113,14 +123,25 @@ async function handleOrgSummary(request, env) {
          FROM sites s
          JOIN departments d ON d.site_code = s.code
          LEFT JOIN employees e ON e.dept_code = d.code
+                              AND e.hire_date <= ?
+                              AND (e.resign_date IS NULL OR e.resign_date >= ?)
         GROUP BY s.code, d.code
         ORDER BY s.sort_order, d.sort_order`,
-    ).all(),
+    )
+      .bind(today, today)
+      .all(),
     env.DB.prepare(
       `SELECT trigger_type, finished_at, status
          FROM reset_runs WHERE status = 'ok'
         ORDER BY id DESC LIMIT 1`,
     ).first(),
+    env.DB.prepare(
+      `SELECT COALESCE(SUM(hire_date > ?), 0) AS upcoming,
+              COALESCE(SUM(resign_date IS NOT NULL AND resign_date < ?), 0) AS resigned
+         FROM employees`,
+    )
+      .bind(today, today)
+      .first(),
   ]);
 
   const sites = [];
@@ -137,6 +158,8 @@ async function handleOrgSummary(request, env) {
   return json({
     company: COMPANY,
     totalHeadcount: sites.reduce((sum, s) => sum + s.headcount, 0),
+    upcomingHires: extra.upcoming,
+    resigned: extra.resigned,
     sites,
     lastReset: lastReset
       ? { trigger: lastReset.trigger_type, finishedAt: lastReset.finished_at }

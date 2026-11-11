@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>입·퇴사 케이스 · 도담테크산업 IT 운영 포털 (시뮬레이션)</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="sim-banner" role="note">
+    <strong>시뮬레이션</strong>
+    가상 회사 ‘도담테크산업’의 데모입니다. 실제 회사·인물·시스템과 관계없으며, 데이터는 매일 04:30(KST)에 초기화됩니다.
+  </div>
+
+  <header class="topbar">
+    <div class="brand">도담테크산업 <span>IT 운영 포털</span></div>
+    <nav class="mainnav" aria-label="주 메뉴">
+      <a href="/app" data-nav="home">홈</a>
+      <a href="/tickets" data-nav="tickets">헬프데스크</a>
+      <a href="/faq" data-nav="faq">FAQ</a>
+      <a href="/assets" data-nav="assets" data-it-only hidden>자산</a>
+      <a href="/licenses" data-nav="licenses" data-it-only hidden>라이선스</a>
+      <a href="/directory" data-nav="directory" data-it-only hidden>디렉터리</a>
+      <a href="/lifecycle" data-nav="lifecycle" data-it-only hidden>입·퇴사</a>
+    </nav>
+    <div class="user">
+      <span id="user-info" class="muted">불러오는 중…</span>
+      <button type="button" id="logout" class="link-button">로그아웃</button>
+    </div>
+  </header>
+
+  <main class="content">
+    <p><a href="/lifecycle">← 입·퇴사 목록</a></p>
+    <p id="page-error" class="error" role="alert" hidden></p>
+
+    <div id="case" hidden>
+      <div class="ticket-head">
+        <h2 id="title"></h2>
+        <div id="badges" class="badges"></div>
+        <p id="subtitle" class="muted small"></p>
+      </div>
+
+      <div class="summary-grid" id="state-cards"></div>
+
+      <p id="message" class="logon-result ok" role="status" hidden></p>
+      <p id="action-error" class="error" role="alert" hidden></p>
+
+      <section class="card">
+        <h3>체크리스트 <span class="muted small">(선행 항목이 끝나야 실행할 수 있습니다)</span></h3>
+        <ol id="items" class="checklist"></ol>
+      </section>
+    </div>
+  </main>
+
+  <script type="module" src="/js/lifecycle-case.js"></script>
+</body>
+</html>

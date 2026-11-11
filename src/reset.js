@@ -7,6 +7,7 @@ import { generateSeedData } from './lib/seed-data.js';
 import { generateDemoTickets } from './lib/seed-tickets.js';
 import { generateDemoAssets } from './lib/seed-assets.js';
 import { generateDirectory } from './lib/seed-directory.js';
+import { generateLifecycle } from './lib/seed-lifecycle.js';
 import { buildResetStatements } from './lib/reset-plan.js';
 import { SLA_CONFIG } from './lib/sla-config.js';
 
@@ -23,7 +24,13 @@ export async function runReset(env, triggerType, now = new Date()) {
   const helpdesk = generateDemoTickets({ now, cfg: SLA_CONFIG, assets: inventory });
   // 가상 AD 디렉터리 (재직자 40명 + 퇴사자 2 + 서비스 계정 3)
   const directory = generateDirectory({ employees: data.employees, now });
-  const statements = buildResetStatements(data, helpdesk, inventory, directory);
+  // 입·퇴사: 퇴사일 설정, 입사 예정자(인사 등록만, AD 계정·장비 없음), 진행 중 케이스
+  const lifecycle = generateLifecycle({ employees: data.employees, directoryUsers: directory.users, now });
+  const employees = [
+    ...data.employees.map((e) => ({ ...e, resignDate: lifecycle.resignDates[e.empNo] ?? null })),
+    ...lifecycle.newHires,
+  ];
+  const statements = buildResetStatements({ ...data, employees }, helpdesk, inventory, directory, lifecycle);
 
   let result;
   try {
@@ -31,7 +38,8 @@ export async function runReset(env, triggerType, now = new Date()) {
     result = {
       ok: true,
       statements: statements.length,
-      employees: data.employees.length,
+      employees: employees.length,
+      lifecycleCases: lifecycle.cases.length,
       tickets: helpdesk.tickets.length,
       assets: inventory.assets.length,
       licenses: inventory.licenses.length,

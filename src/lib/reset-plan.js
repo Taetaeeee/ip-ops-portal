@@ -12,6 +12,9 @@ import { buildInsertStatements } from './sql-util.js';
 // 티켓 → 자산 참조가 있으므로 티켓을 자산보다 먼저 지운다.
 export const DELETE_ORDER = Object.freeze([
   'sessions',
+  'checklist_links',
+  'checklist_items',
+  'lifecycle_cases',
   'dir_events',
   'dir_operations',
   'dir_memberships',
@@ -34,7 +37,7 @@ export const DELETE_ORDER = Object.freeze([
 export const INSERT_COLUMNS = Object.freeze({
   sites: ['code', 'name', 'kind', 'sort_order'],
   departments: ['code', 'name', 'site_code', 'sort_order'],
-  employees: ['emp_no', 'name', 'dept_code', 'job_title', 'is_team_lead', 'duty', 'hire_date', 'extension'],
+  employees: ['emp_no', 'name', 'dept_code', 'job_title', 'is_team_lead', 'duty', 'hire_date', 'extension', 'resign_date'],
   assets: [
     'id', 'asset_tag', 'asset_type', 'manufacturer', 'model', 'serial_no', 'purchased_on', 'status',
     'location', 'status_note', 'status_changed_at', 'version',
@@ -62,7 +65,12 @@ export const INSERT_COLUMNS = Object.freeze({
   ],
   dir_memberships: ['group_id', 'user_id', 'added_at'],
   dir_events: ['event_id', 'event_name', 'occurred_at', 'target_user_id', 'target_sam', 'group_sam', 'actor_sam', 'operation_id', 'details'],
+  // 5단계 입·퇴사 (케이스는 직원·AD 계정을 참조하므로 그 뒤에)
+  lifecycle_cases: ['id', 'case_type', 'emp_no', 'effective_date', 'status', 'dir_user_id', 'created_by', 'created_at', 'completed_at', 'note'],
+  checklist_items: ['case_id', 'seq', 'item_key', 'title', 'kind', 'requires', 'status', 'assignee_emp_no'],
 });
+
+const EMPTY_LIFECYCLE = Object.freeze({ cases: [], items: [] });
 
 const EMPTY_HELPDESK = Object.freeze({ tickets: [], events: [], faqs: [] });
 const EMPTY_DIRECTORY = Object.freeze({ groups: [], users: [], memberships: [], events: [] });
@@ -75,12 +83,18 @@ const EMPTY_INVENTORY = Object.freeze({ assets: [], assignments: [], software: [
  * @param {{assets, assignments, software, licenses, allowlist}} inventory generateDemoAssets() 결과
  * @returns {{sql: string, params: any[]}[]}
  */
-export function buildResetStatements(data, helpdesk = EMPTY_HELPDESK, inventory = EMPTY_INVENTORY, directory = EMPTY_DIRECTORY) {
+export function buildResetStatements(
+  data,
+  helpdesk = EMPTY_HELPDESK,
+  inventory = EMPTY_INVENTORY,
+  directory = EMPTY_DIRECTORY,
+  lifecycle = EMPTY_LIFECYCLE,
+) {
   const rows = {
     sites: data.sites.map((s) => [s.code, s.name, s.kind, s.sortOrder]),
     departments: data.departments.map((d) => [d.code, d.name, d.siteCode, d.sortOrder]),
     employees: data.employees.map((e) => [
-      e.empNo, e.name, e.deptCode, e.jobTitle, e.isTeamLead ? 1 : 0, e.duty, e.hireDate, e.extension,
+      e.empNo, e.name, e.deptCode, e.jobTitle, e.isTeamLead ? 1 : 0, e.duty, e.hireDate, e.extension, e.resignDate ?? null,
     ]),
     assets: inventory.assets.map((a) => [
       a.id, a.assetTag, a.assetType, a.manufacturer, a.model, a.serialNo, a.purchasedOn, a.status,
@@ -107,6 +121,8 @@ export function buildResetStatements(data, helpdesk = EMPTY_HELPDESK, inventory 
     dir_users: directory.users.map(pick(INSERT_COLUMNS.dir_users)),
     dir_memberships: directory.memberships.map(pick(INSERT_COLUMNS.dir_memberships)),
     dir_events: directory.events.map(pick(INSERT_COLUMNS.dir_events)),
+    lifecycle_cases: lifecycle.cases.map(pick(INSERT_COLUMNS.lifecycle_cases)),
+    checklist_items: lifecycle.items.map(pick(INSERT_COLUMNS.checklist_items)),
   };
 
   const statements = DELETE_ORDER.map((table) => ({ sql: `DELETE FROM ${table}`, params: [] }));

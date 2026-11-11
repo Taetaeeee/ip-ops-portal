@@ -35,10 +35,10 @@ let employee;
 let it;
 let ticketId;
 
-test('준비: 관리자 초기화로 직원 40명·티켓 30건이 들어간다', async () => {
+test('준비: 관리자 초기화로 직원(재직 40 + 입사 예정 1)·티켓 30건이 들어간다', async () => {
   const r = await call('/api/admin/reset', { method: 'POST', headers: { authorization: `Bearer ${ADMIN_TOKEN}` } });
   assert.equal(r.status, 200);
-  assert.equal(r.body.employees, 40);
+  assert.equal(r.body.employees, 41);
   assert.equal(r.body.tickets, 30);
   employee = await login('employee');
   it = await login('it_admin');

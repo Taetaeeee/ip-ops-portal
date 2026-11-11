@@ -383,6 +383,50 @@ td.after { font-weight: 600; }
 }
 .small-button { position: absolute; top: 8px; right: 8px; padding: 3px 10px; font-size: 12px; }
 
+/* ───────── 5단계: 입·퇴사 ───────── */
+
+.warn-panel {
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: var(--danger-bg);
+  color: var(--danger-text);
+}
+.warn-panel h3 { margin: 0 0 4px; }
+.warn-panel a { color: inherit; font-weight: 600; }
+.two-col { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.case-onboarding { background: var(--accent-soft); color: var(--accent); }
+.case-offboarding { background: var(--warn-bg); color: var(--warn-text); }
+.state-value { font-size: 18px; font-weight: 700; margin: 2px 0; overflow-wrap: anywhere; }
+
+.checklist { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.check-item { padding: 12px; border: 1px solid var(--border); border-radius: 8px; }
+.check-item.state-done { background: color-mix(in srgb, var(--ok-bg) 55%, transparent); }
+.check-item.state-blocked { opacity: 0.75; }
+.check-head { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.check-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--neutral-bg);
+  color: var(--neutral-text);
+  font-weight: 700;
+  font-size: 13px;
+}
+.state-done .check-mark { background: var(--ok-text); color: #fff; }
+.state-ready .check-mark { background: var(--accent); color: #fff; }
+.check-meta { margin-top: 4px; }
+.check-done { background: var(--ok-bg); color: var(--ok-text); }
+.check-ready { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.check-blocked { background: var(--neutral-bg); color: var(--neutral-text); }
+.blocked-why { color: var(--muted); margin: 6px 0 0; }
+.check-item .links { margin-top: 6px; }
+.check-item .links .badge { margin-left: 4px; }
+.item-form { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; margin-top: 10px; }
+.item-form label { flex: 1; min-width: 200px; }
+
 /* FAQ */
 details.faq summary { cursor: pointer; font-weight: 600; }
 details.faq h4 { margin: 12px 0 4px; font-size: 13px; color: var(--muted); }

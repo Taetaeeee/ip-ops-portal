@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>입·퇴사 · 도담테크산업 IT 운영 포털 (시뮬레이션)</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="sim-banner" role="note">
+    <strong>시뮬레이션</strong>
+    가상 회사 ‘도담테크산업’의 데모입니다. 실제 회사·인물·시스템과 관계없으며, 데이터는 매일 04:30(KST)에 초기화됩니다.
+  </div>
+
+  <header class="topbar">
+    <div class="brand">도담테크산업 <span>IT 운영 포털</span></div>
+    <nav class="mainnav" aria-label="주 메뉴">
+      <a href="/app" data-nav="home">홈</a>
+      <a href="/tickets" data-nav="tickets">헬프데스크</a>
+      <a href="/faq" data-nav="faq">FAQ</a>
+      <a href="/assets" data-nav="assets" data-it-only hidden>자산</a>
+      <a href="/licenses" data-nav="licenses" data-it-only hidden>라이선스</a>
+      <a href="/directory" data-nav="directory" data-it-only hidden>디렉터리</a>
+      <a href="/lifecycle" data-nav="lifecycle" data-it-only hidden>입·퇴사</a>
+    </nav>
+    <div class="user">
+      <span id="user-info" class="muted">불러오는 중…</span>
+      <button type="button" id="logout" class="link-button">로그아웃</button>
+    </div>
+  </header>
+
+  <main class="content">
+    <div class="page-head">
+      <h2>입·퇴사 처리</h2>
+      <span id="today" class="muted small"></span>
+    </div>
+    <p id="page-error" class="error" role="alert" hidden></p>
+
+    <section id="warnings" class="warn-panel" hidden aria-live="polite">
+      <h3>미처리 퇴사자 계정</h3>
+      <p class="small">인사 기준 퇴사일이 지났는데 AD 계정이 아직 활성입니다. 퇴사한 사람이 회사 시스템에 로그인할 수 있는 상태라 보안 위험이 큽니다.</p>
+      <ul id="warning-list" class="plain-list"></ul>
+    </section>
+
+    <section class="card">
+      <h3>케이스</h3>
+      <div class="table-wrap plain"><table id="cases" class="tickets"></table></div>
+    </section>
+
+    <div class="two-col">
+      <section class="card">
+        <h3>퇴사 케이스 만들기</h3>
+        <form id="off-form" class="stack">
+          <label>직원 <select name="empNo" required></select></label>
+          <label>퇴사일 <input type="date" name="effectiveDate" required></label>
+          <label>메모 <input name="note" maxlength="500" placeholder="예: 인사팀 통보 (일신상 사유)"></label>
+          <button type="submit" class="button primary">퇴사 케이스 만들기</button>
+        </form>
+        <p id="off-error" class="error" role="alert" hidden></p>
+      </section>
+
+      <section class="card">
+        <h3>입사 등록 + 케이스 만들기</h3>
+        <form id="on-form" class="stack">
+          <label>이름 <input name="name" maxlength="30" required placeholder="홍길동"></label>
+          <label>부서 <select name="deptCode" required></select></label>
+          <label>직급 <input name="jobTitle" maxlength="20" placeholder="사원"></label>
+          <label>입사일 <input type="date" name="hireDate" required></label>
+          <button type="submit" class="button primary">입사 등록</button>
+        </form>
+        <p class="muted small">인사 명단에 새 사번으로 등록하고 입사 체크리스트를 만듭니다. 계정·장비는 체크리스트에서 처리합니다.</p>
+        <p id="on-error" class="error" role="alert" hidden></p>
+      </section>
+    </div>
+  </main>
+
+  <script type="module" src="/js/lifecycle.js"></script>
+</body>
+</html>

@@ -6,6 +6,7 @@ import { generateDemoTickets } from '../src/lib/seed-tickets.js';
 import { SLA_CONFIG } from '../src/lib/sla-config.js';
 import { generateDemoAssets } from '../src/lib/seed-assets.js';
 import { generateDirectory } from '../src/lib/seed-directory.js';
+import { generateLifecycle } from '../src/lib/seed-lifecycle.js';
 
 const NOW = new Date('2026-11-17T04:30:00+09:00');
 const data = generateSeedData();
@@ -41,6 +42,29 @@ test('지우기는 자식 → 부모 순서 (참조 무결성)', () => {
   assert.ok(pos('dir_operations') < pos('dir_users'));
   assert.ok(pos('dir_memberships') < pos('dir_users'));
   assert.ok(pos('dir_memberships') < pos('dir_groups'));
+  // 5단계: 연결 → 항목 → 케이스 순, 케이스는 직원·AD 계정·작업·자산을 참조
+  assert.ok(pos('checklist_links') < pos('checklist_items'));
+  assert.ok(pos('checklist_items') < pos('lifecycle_cases'));
+  for (const t of ['dir_users', 'dir_operations', 'assets', 'asset_assignments', 'employees']) {
+    assert.ok(pos('checklist_links') < pos(t), t);
+    assert.ok(pos('lifecycle_cases') < pos(t), t);
+  }
+});
+
+test('입·퇴사 데이터 포함: 입사 예정자 행·퇴사일·케이스·항목', () => {
+  const lifecycle = generateLifecycle({ employees: data.employees, directoryUsers: directory.users, now: NOW });
+  const employees = [...data.employees.map((e) => ({ ...e, resignDate: lifecycle.resignDates[e.empNo] ?? null })), ...lifecycle.newHires];
+  const stmts = buildResetStatements({ ...data, employees }, helpdesk, inventory, directory, lifecycle);
+  const rows = (table) =>
+    stmts.filter((s) => s.sql.startsWith(`INSERT INTO ${table} (`)).reduce((n, s) => n + s.params.length / INSERT_COLUMNS[table].length, 0);
+  assert.equal(rows('employees'), 41);
+  assert.equal(rows('lifecycle_cases'), 2);
+  assert.equal(rows('checklist_items'), 11);
+  const empParams = stmts.filter((s) => s.sql.startsWith('INSERT INTO employees (')).flatMap((s) => s.params);
+  assert.ok(empParams.includes('2026-11-17'), '퇴사일(오늘) 포함');
+  assert.ok(empParams.includes('DT-0041'), '입사 예정자 포함');
+  const order = stmts.filter((s) => s.sql.startsWith('INSERT')).map((s) => s.sql.split(' ')[2]);
+  assert.ok(order.lastIndexOf('dir_users') < order.indexOf('lifecycle_cases'));
 });
 
 test('넣기는 부모 → 자식 순서', () => {

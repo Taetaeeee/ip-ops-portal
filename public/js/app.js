@@ -4,7 +4,11 @@ import { api, el, $, initShell, showError, formatKst } from './common.js';
 
 function renderSummary(summary) {
   const c = summary.company;
-  $('company-line').textContent = `${c.business} · 직원 ${summary.totalHeadcount}명`;
+  const extra = [
+    summary.upcomingHires ? `입사 예정 ${summary.upcomingHires}명` : null,
+    summary.resigned ? `퇴사 ${summary.resigned}명` : null,
+  ].filter(Boolean);
+  $('company-line').textContent = `${c.business} · 재직 ${summary.totalHeadcount}명${extra.length ? ` (${extra.join(', ')} 제외)` : ''}`;
 
   $('sites').replaceChildren(
     ...summary.sites.map((site) =>

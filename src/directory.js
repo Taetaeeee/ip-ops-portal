@@ -253,11 +253,25 @@ export async function handleDirOperationCreate(request, env) {
   if (auth.response) return auth.response;
   const body = await readJson(request);
   if (!body.ok) return body.response;
-  const input = body.body ?? {};
+  const r = await executeDirectoryOperation(env, auth.session, body.body ?? {});
+  if (!r.ok) return fail(r.httpStatus, r.code, r.message, r.errors);
+  return json(r.result, 201);
+}
 
+/**
+ * 디렉터리 작업 실행 (API 와 5단계 입·퇴사 체크리스트가 함께 쓴다)
+ * @param {object} session 로그인 세션 (IT 담당자)
+ * @param {object} input { type, userId?, ... }
+ * @param {object} [options]
+ *   extraStatements: (opToken) => [{sql, params}]  같은 batch 에 붙일 SQL.
+ *     작업이 실제로 반영됐을 때만 들어가도록 각 SQL 에 opGuard(opToken) 조건을 붙여 쓴다.
+ * @returns {Promise<{ok: true, result, operationId} | {ok: false, httpStatus, code, message, errors?}>}
+ */
+export async function executeDirectoryOperation(env, session, input, { extraStatements } = {}) {
+  const failR = (httpStatus, code, message, errors) => ({ ok: false, httpStatus, code, message, errors });
   // 허용 목록 밖 작업은 DB 를 읽기 전에 바로 거부
   if (!isOperation(input.type)) {
-    return fail(400, 'UNSUPPORTED_OPERATION', '허용 목록에 없는 작업입니다 (IT 담당자에게 위임된 범위 밖)');
+    return failR(400, 'UNSUPPORTED_OPERATION', '허용 목록에 없는 작업입니다 (IT 담당자에게 위임된 범위 밖)');
   }
 
   let user = null;
@@ -265,7 +279,7 @@ export async function handleDirOperationCreate(request, env) {
   if (input.type !== 'CREATE_USER') {
     const id = parseId(input.userId);
     user = id && (await loadUser(env, id));
-    if (!user) return fail(404, 'USER_NOT_FOUND', '대상 계정이 없습니다');
+    if (!user) return failR(404, 'USER_NOT_FOUND', '대상 계정이 없습니다');
     memberOf = (await loadMemberOf(env, user.id)).map((g) => g.sam);
   }
 
@@ -291,34 +305,48 @@ export async function handleDirOperationCreate(request, env) {
     now,
     generatedAtKst: kstStamp(now),
   });
-  if (!plan.ok) return fail(plan.httpStatus, plan.code, plan.message, plan.errors);
+  if (!plan.ok) return failR(plan.httpStatus, plan.code, plan.message, plan.errors);
 
-  const actorSam = await actorOf(env, auth.session);
+  const actorSam = await actorOf(env, session);
   const opToken = randomTokenHex(16);
-  const stmts = buildDirectoryStatements(plan, {
-    user: user ? { id: user.id, version: user.version } : null,
-    writeToken: randomTokenHex(16),
-    opToken,
-    actorSam,
-    actorEmpNo: auth.session.employee.empNo,
-    nowIso: now.toISOString(),
-    input,
-  });
+  const stmts = [
+    ...buildDirectoryStatements(plan, {
+      user: user ? { id: user.id, version: user.version } : null,
+      writeToken: randomTokenHex(16),
+      opToken,
+      actorSam,
+      actorEmpNo: session.employee.empNo,
+      nowIso: now.toISOString(),
+      input,
+    }),
+    ...(extraStatements ? extraStatements(opToken) : []),
+  ];
 
   let results;
   try {
     results = await env.DB.batch(stmts.map((s) => env.DB.prepare(s.sql).bind(...s.params)));
   } catch (err) {
     // 동시에 같은 계정명·DN 으로 생성한 경우 (DB UNIQUE 이중 안전장치)
-    if (/UNIQUE/i.test(String(err?.message))) return fail(409, 'CONFLICT', '같은 계정명 또는 이름이 방금 생겼습니다. 다시 시도하세요');
+    if (/UNIQUE/i.test(String(err?.message))) return failR(409, 'CONFLICT', '같은 계정명 또는 이름이 방금 생겼습니다. 다시 시도하세요');
     throw err;
   }
   if (results[0].meta.changes !== 1) {
-    return fail(409, 'CONFLICT', '그 사이 다른 사람이 계정을 바꿨습니다. 새로고침 후 다시 시도하세요');
+    return failR(409, 'CONFLICT', '그 사이 다른 사람이 계정을 바꿨습니다. 새로고침 후 다시 시도하세요');
   }
   const op = await env.DB.prepare('SELECT id FROM dir_operations WHERE op_token = ?').bind(opToken).first();
-  return json(await operationResult(env, op.id), 201);
+  return { ok: true, operationId: op.id, result: await operationResult(env, op.id) };
 }
+
+/** 같은 batch 의 추가 SQL 이 "디렉터리 작업이 반영됐을 때만" 실행되게 하는 조건 */
+export const opGuard = 'EXISTS (SELECT 1 FROM dir_operations WHERE op_token = ?)';
+
+/** 사번으로 계정 찾기 (5단계에서 사용) */
+export async function findAccountsByEmployee(env, empNo) {
+  const { results } = await env.DB.prepare("SELECT * FROM dir_users WHERE employee_id = ? AND kind = 'PERSON' ORDER BY id").bind(empNo).all();
+  return results.map(rowToUser);
+}
+
+export { loadUser, loadMemberOf };
 
 // 로그인 시험 (사용자 행동 시뮬레이션)
 export async function handleLogonTest(request, env, params) {

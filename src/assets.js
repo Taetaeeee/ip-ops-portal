@@ -182,30 +182,52 @@ async function runAssetCommand(request, env, params, makePlan) {
   if (auth.response) return auth.response;
   const body = await readJson(request);
   if (!body.ok) return body.response;
-  const id = parseId(params);
-  const row = id && (await loadAssetRow(env, id));
-  if (!row) return fail(404, 'NOT_FOUND', '자산을 찾을 수 없습니다');
+  const r = await executeAssetCommand(env, auth.session, parseId(params), body.body, makePlan);
+  if (!r.ok) return fail(r.httpStatus, r.code, r.message, r.errors);
+  return json(await assetDetail(env, r.assetId));
+}
+
+/**
+ * 자산 작업 실행 (API 와 5단계 입·퇴사 체크리스트가 함께 쓴다)
+ * @param {number} assetId
+ * @param {object} input
+ * @param {(asset, open, input) => plan} makePlan
+ * @param {object} [options] extraStatements: (writeToken) => [{sql, params}] — assetGuard 조건과 함께 쓴다
+ */
+export async function executeAssetCommand(env, session, assetId, input, makePlan, { extraStatements } = {}) {
+  const failR = (httpStatus, code, message, errors) => ({ ok: false, httpStatus, code, message, errors });
+  const row = assetId && (await loadAssetRow(env, assetId));
+  if (!row) return failR(404, 'NOT_FOUND', '자산을 찾을 수 없습니다');
 
   const asset = { id: row.id, assetType: row.asset_type, status: row.status, version: row.version };
   const open = row.open_assignment_id ? { id: row.open_assignment_id, empNo: row.holder_emp_no } : null;
-  const plan = await makePlan(asset, open, body.body);
-  if (!plan.ok) return fail(plan.httpStatus, plan.code, plan.message, plan.errors);
+  const plan = await makePlan(asset, open, input);
+  if (!plan.ok) return failR(plan.httpStatus, plan.code, plan.message, plan.errors);
 
   const token = randomTokenHex(16);
-  const stmts = buildAssetCommandStatements(asset, plan, auth.session.employee.empNo, new Date().toISOString(), token);
+  const nowIso = new Date().toISOString();
+  const stmts = [
+    ...buildAssetCommandStatements(asset, plan, session.employee.empNo, nowIso, token),
+    ...(extraStatements ? extraStatements(token, { assetId: asset.id, nowIso, openAssignmentId: open?.id ?? null }) : []),
+  ];
   let results;
   try {
     results = await env.DB.batch(stmts.map((s) => env.DB.prepare(s.sql).bind(...s.params)));
   } catch (err) {
     // 부분 고유 인덱스(한 자산에 열린 배정 1건)에 걸린 경우
-    if (/UNIQUE/i.test(String(err?.message))) return fail(409, 'CONFLICT', '이미 다른 사용자에게 배정됐습니다');
+    if (/UNIQUE/i.test(String(err?.message))) return failR(409, 'CONFLICT', '이미 다른 사용자에게 배정됐습니다');
     throw err;
   }
   if (results[0].meta.changes !== 1) {
-    return fail(409, 'CONFLICT', '그 사이 다른 사람이 자산을 바꿨습니다. 새로고침 후 다시 시도하세요');
+    return failR(409, 'CONFLICT', '그 사이 다른 사람이 자산을 바꿨습니다. 새로고침 후 다시 시도하세요');
   }
-  return json(await assetDetail(env, id));
+  return { ok: true, assetId: asset.id, assetTag: row.asset_tag };
 }
+
+/** 같은 batch 의 추가 SQL 이 "자산 작업이 반영됐을 때만" 실행되게 하는 조건 (params: assetId, token) */
+export const assetGuard = 'EXISTS (SELECT 1 FROM assets WHERE id = ? AND write_token = ?)';
+
+export { loadLicenseInputs, ASSIGNABLE_TYPES };
 
 export const handleAssetAssign = (request, env, params) =>
   runAssetCommand(request, env, params, async (asset, open, body) => {
