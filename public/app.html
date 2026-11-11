@@ -12,30 +12,61 @@
     가상 회사 ‘도담테크산업’의 데모입니다. 실제 회사·인물·시스템과 관계없으며, 데이터는 매일 04:30(KST)에 초기화됩니다.
   </div>
 
-  <header class="topbar">
-    <div class="brand">도담테크산업 <span>IT 운영 포털</span></div>
-    <nav class="mainnav" aria-label="주 메뉴">
-      <a href="/app" data-nav="home">홈</a>
-      <a href="/tickets" data-nav="tickets">헬프데스크</a>
-      <a href="/faq" data-nav="faq">FAQ</a>
-      <a href="/assets" data-nav="assets" data-it-only hidden>자산</a>
-      <a href="/licenses" data-nav="licenses" data-it-only hidden>라이선스</a>
-      <a href="/directory" data-nav="directory" data-it-only hidden>디렉터리</a>
-      <a href="/lifecycle" data-nav="lifecycle" data-it-only hidden>입·퇴사</a>
-    </nav>
-    <div class="user">
-      <span id="user-info" class="muted">불러오는 중…</span>
-      <button type="button" id="logout" class="link-button">로그아웃</button>
-    </div>
-  </header>
+  <!-- 상단 메뉴는 js/common.js 가 그린다 (메뉴 정의를 한 곳에 모으기 위해) -->
+  <header class="topbar" id="app-header"></header>
 
   <main class="content">
-    <section>
-      <h2>회사 개요</h2>
-      <p id="company-line" class="muted"></p>
-      <div id="sites" class="site-grid"></div>
-      <p id="last-reset" class="muted small"></p>
+    <section class="hero">
+      <div>
+        <h2 id="greeting">IT 운영 포털에 오신 것을 환영합니다</h2>
+        <p id="hero-sub">헬프데스크, IT 자산, 계정, 입·퇴사 업무를 한곳에서 처리할 수 있습니다.</p>
+      </div>
+      <!-- 장식용 그림 (직접 그린 SVG, 데이터 아님) -->
+      <svg class="hero-art" viewBox="0 0 210 120" aria-hidden="true">
+        <defs>
+          <linearGradient id="srv" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#60a5fa"/><stop offset="1" stop-color="#1d4ed8"/>
+          </linearGradient>
+          <linearGradient id="srvTop" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#bfdbfe"/><stop offset="1" stop-color="#93c5fd"/>
+          </linearGradient>
+        </defs>
+        <ellipse cx="150" cy="104" rx="52" ry="9" fill="#bfd3fb" opacity="0.6"/>
+        <g transform="translate(112 18)">
+          <rect x="0" y="54" width="76" height="24" rx="5" fill="url(#srv)"/>
+          <rect x="0" y="27" width="76" height="24" rx="5" fill="url(#srv)"/>
+          <rect x="0" y="0" width="76" height="24" rx="5" fill="url(#srv)"/>
+          <rect x="0" y="0" width="76" height="6" rx="3" fill="url(#srvTop)" opacity="0.7"/>
+          <g fill="#dbeafe"><circle cx="12" cy="12" r="2.5"/><circle cx="12" cy="39" r="2.5"/><circle cx="12" cy="66" r="2.5"/></g>
+          <g fill="#34d399"><circle cx="20" cy="12" r="2.5"/><circle cx="20" cy="39" r="2.5"/><circle cx="20" cy="66" r="2.5"/></g>
+          <g stroke="#bfdbfe" stroke-width="2" stroke-linecap="round" opacity="0.8">
+            <path d="M38 12h28M38 39h28M38 66h28"/>
+          </g>
+        </g>
+        <g fill="#ffffff" opacity="0.9">
+          <circle cx="58" cy="44" r="16"/><circle cx="78" cy="40" r="20"/><circle cx="96" cy="48" r="13"/><rect x="44" y="46" width="62" height="16" rx="8"/>
+        </g>
+        <g fill="#dbe8ff"><circle cx="28" cy="88" r="9"/><circle cx="42" cy="84" r="12"/><rect x="20" y="86" width="36" height="10" rx="5"/></g>
+      </svg>
     </section>
+
+    <div id="kpis" class="kpi-grid" aria-label="회사 개요"></div>
+
+    <div class="home-grid">
+      <section class="card">
+        <div class="page-head">
+          <h3>사업장·부서별 재직 인원</h3>
+          <span id="company-line" class="muted small"></span>
+        </div>
+        <div id="sites" class="site-grid"></div>
+        <p id="last-reset" class="muted small"></p>
+      </section>
+
+      <section class="card">
+        <h3>빠른 작업</h3>
+        <div id="quick" class="quick-actions"></div>
+      </section>
+    </div>
     <p id="app-error" class="error" role="alert" hidden></p>
   </main>
 

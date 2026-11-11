@@ -12,22 +12,8 @@
     가상 회사 ‘도담테크산업’의 데모입니다. 실제 회사·인물·시스템과 관계없으며, 데이터는 매일 04:30(KST)에 초기화됩니다.
   </div>
 
-  <header class="topbar">
-    <div class="brand">도담테크산업 <span>IT 운영 포털</span></div>
-    <nav class="mainnav" aria-label="주 메뉴">
-      <a href="/app" data-nav="home">홈</a>
-      <a href="/tickets" data-nav="tickets">헬프데스크</a>
-      <a href="/faq" data-nav="faq">FAQ</a>
-      <a href="/assets" data-nav="assets" data-it-only hidden>자산</a>
-      <a href="/licenses" data-nav="licenses" data-it-only hidden>라이선스</a>
-      <a href="/directory" data-nav="directory" data-it-only hidden>디렉터리</a>
-      <a href="/lifecycle" data-nav="lifecycle" data-it-only hidden>입·퇴사</a>
-    </nav>
-    <div class="user">
-      <span id="user-info" class="muted">불러오는 중…</span>
-      <button type="button" id="logout" class="link-button">로그아웃</button>
-    </div>
-  </header>
+  <!-- 상단 메뉴는 js/common.js 가 그린다 (메뉴 정의를 한 곳에 모으기 위해) -->
+  <header class="topbar" id="app-header"></header>
 
   <main class="content">
     <div class="page-head">

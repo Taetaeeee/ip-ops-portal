@@ -50,22 +50,67 @@ export function el(tag, props = {}, ...children) {
 
 export const $ = (id) => document.getElementById(id);
 
-/** 상단: 사용자 정보·메뉴 강조·로그아웃. 로그인 정보를 돌려준다. */
-export async function initShell(active) {
-  for (const a of document.querySelectorAll('[data-nav]')) {
-    if (a.dataset.nav === active) a.setAttribute('aria-current', 'page');
-  }
-  $('logout')?.addEventListener('click', async () => {
+/** 아이콘: /icons.svg 의 symbol 을 쓴다 (외부 라이브러리 없음) */
+export function icon(name, className = 'icon') {
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('class', className);
+  svg.setAttribute('aria-hidden', 'true');
+  const use = document.createElementNS(NS, 'use');
+  use.setAttribute('href', `/icons.svg#${name}`);
+  svg.append(use);
+  return svg;
+}
+
+// 상단 메뉴: 한 곳에서 정의한다 (화면마다 복사하지 않음). itOnly 는 IT 담당자에게만 보인다.
+export const NAV_ITEMS = Object.freeze([
+  { key: 'home', href: '/app', label: '홈', icon: 'home' },
+  { key: 'tickets', href: '/tickets', label: '헬프데스크', icon: 'ticket' },
+  { key: 'faq', href: '/faq', label: 'FAQ', icon: 'help' },
+  { key: 'assets', href: '/assets', label: '자산', icon: 'monitor', itOnly: true },
+  { key: 'licenses', href: '/licenses', label: '라이선스', icon: 'key', itOnly: true },
+  { key: 'directory', href: '/directory', label: '디렉터리', icon: 'sitemap', itOnly: true },
+  { key: 'lifecycle', href: '/lifecycle', label: '입·퇴사', icon: 'users', itOnly: true },
+]);
+
+function renderHeader(active, me) {
+  const header = $('app-header');
+  if (!header) return;
+  const isIt = me.persona === 'it_admin';
+  const e = me.employee;
+  header.replaceChildren(
+    el(
+      'a',
+      { class: 'brand', href: '/app', 'aria-label': 'IT 운영 포털 홈' },
+      el('span', { class: 'brand-logo' }, icon('logo')),
+      el('span', { class: 'brand-text' }, el('strong', { text: 'IT 운영 포털' }), el('small', { text: '도담테크산업 · IT Operations Portal' })),
+    ),
+    el(
+      'nav',
+      { class: 'mainnav', 'aria-label': '주 메뉴' },
+      // IT 전용 메뉴는 화면에서 숨기는 것일 뿐, 권한 검사는 서버가 한다
+      NAV_ITEMS.filter((n) => !n.itOnly || isIt).map((n) =>
+        el('a', { href: n.href, dataset: { nav: n.key }, 'aria-current': n.key === active ? 'page' : null }, icon(n.icon), el('span', { text: n.label })),
+      ),
+    ),
+    el(
+      'div',
+      { class: 'user' },
+      el('span', { class: 'avatar', 'aria-hidden': 'true', text: e.name.slice(0, 1) }),
+      el('span', { class: 'user-text' }, el('strong', { id: 'user-info', text: `${e.name} ${e.jobTitle}` }), el('small', { text: `${me.personaLabel} · ${e.department}` })),
+      el('button', { type: 'button', id: 'logout', class: 'icon-button', title: '로그아웃', 'aria-label': '로그아웃' }, icon('logout')),
+    ),
+  );
+  $('logout').addEventListener('click', async () => {
     await fetch('/api/demo/logout', { method: 'POST' }).catch(() => {});
     location.replace('/');
   });
+}
+
+/** 상단 메뉴를 그리고 로그인 정보를 돌려준다. 로그인 전이면 로그인 화면으로 보낸다. */
+export async function initShell(active) {
   const me = await api('/api/me');
-  // IT 담당자 전용 메뉴 (화면에서 숨기는 것일 뿐, 권한 검사는 서버가 한다)
-  if (me.persona === 'it_admin') {
-    for (const a of document.querySelectorAll('[data-it-only]')) a.hidden = false;
-  }
-  const e = me.employee;
-  $('user-info').textContent = `${me.personaLabel} · ${e.name} ${e.jobTitle} (${e.department})`;
+  renderHeader(active, me);
   return me;
 }
 
