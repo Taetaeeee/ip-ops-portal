@@ -7,6 +7,7 @@ import {
   planNote,
   planLinkChange,
   planFaq,
+  planAssetLink,
   buildFaqDraft,
 } from '../src/lib/ticket-commands.js';
 import { SLA_CONFIG } from '../src/lib/sla-config.js';
@@ -128,6 +129,23 @@ test('B 장애 링크: 저장·삭제·변경 없음', () => {
   assert.equal(cleared.changes.incident_url, null);
   assert.equal(planLinkChange(ticket(), { url: '' }, { baseUrl: BASE }).code, 'NO_CHANGE');
   assert.equal(planLinkChange(ticket(), { url: 'https://evil.example/x' }, { baseUrl: BASE }).code, 'INVALID_LINK');
+});
+
+test('자산 연결: 연결·해제·변경 없음·폐기 자산·잘못된 값', () => {
+  const asset = { id: 12, assetTag: 'NB-0012', status: 'IN_USE' };
+  const set = planAssetLink(ticket(), { assetId: 12 }, { asset });
+  assert.equal(set.ok, true);
+  assert.deepEqual(set.changes, { asset_id: 12 });
+  assert.deepEqual(set.events[0].data, { kind: 'asset', from: null, to: { id: 12, assetTag: 'NB-0012' } });
+
+  const cleared = planAssetLink(ticket({ assetId: 12 }), { assetId: null }, { asset: null, currentAssetTag: 'NB-0012' });
+  assert.deepEqual(cleared.changes, { asset_id: null });
+  assert.deepEqual(cleared.events[0].data.from, { id: 12, assetTag: 'NB-0012' });
+
+  assert.equal(planAssetLink(ticket({ assetId: 12 }), { assetId: 12 }, { asset }).code, 'NO_CHANGE');
+  assert.equal(planAssetLink(ticket(), { assetId: 3 }, { asset: { ...asset, status: 'DISPOSED' } }).code, 'ASSET_DISPOSED');
+  assert.equal(planAssetLink(ticket(), { assetId: 99 }, { asset: null }).code, 'INVALID_ASSET');
+  assert.equal(planAssetLink(ticket(), { assetId: 'abc' }, { asset: null }).code, 'INVALID_ASSET');
 });
 
 test('FAQ: 완료 티켓만, 한 번만, 초안에 요청자 정보 없음', () => {

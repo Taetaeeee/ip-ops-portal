@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>자산 상세 · 도담테크산업 IT 운영 포털 (시뮬레이션)</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="sim-banner" role="note">
+    <strong>시뮬레이션</strong>
+    가상 회사 ‘도담테크산업’의 데모입니다. 실제 회사·인물·시스템과 관계없으며, 데이터는 매일 04:30(KST)에 초기화됩니다.
+  </div>
+
+  <header class="topbar">
+    <div class="brand">도담테크산업 <span>IT 운영 포털</span></div>
+    <nav class="mainnav" aria-label="주 메뉴">
+      <a href="/app" data-nav="home">홈</a>
+      <a href="/tickets" data-nav="tickets">헬프데스크</a>
+      <a href="/faq" data-nav="faq">FAQ</a>
+      <a href="/assets" data-nav="assets" data-it-only hidden>자산</a>
+      <a href="/licenses" data-nav="licenses" data-it-only hidden>라이선스</a>
+    </nav>
+    <div class="user">
+      <span id="user-info" class="muted">불러오는 중…</span>
+      <button type="button" id="logout" class="link-button">로그아웃</button>
+    </div>
+  </header>
+
+  <main class="content">
+    <p><a href="/assets">← 자산 목록</a></p>
+    <p id="page-error" class="error" role="alert" hidden></p>
+
+    <div id="asset" hidden>
+      <div class="ticket-head">
+        <h2 id="title"></h2>
+        <div id="badges" class="badges"></div>
+      </div>
+
+      <div class="detail-grid">
+        <div class="stack">
+          <section class="card">
+            <h3>자산 정보</h3>
+            <dl id="info" class="info"></dl>
+          </section>
+
+          <section class="card">
+            <h3>배정 이력</h3>
+            <div class="table-wrap plain"><table id="history"></table></div>
+          </section>
+
+          <section class="card">
+            <h3>설치 소프트웨어</h3>
+            <div class="table-wrap plain"><table id="software"></table></div>
+          </section>
+
+          <section class="card">
+            <h3>관련 티켓</h3>
+            <ul id="tickets" class="plain-list"></ul>
+          </section>
+        </div>
+
+        <aside class="stack">
+          <section class="card" id="assign-card" hidden>
+            <h3>배정</h3>
+            <form id="assign-form" class="stack">
+              <label>직원 <select name="empNo"></select></label>
+              <label>메모 <input name="note" maxlength="500" placeholder="예: 신규 입사 지급"></label>
+              <button type="submit" class="button primary">배정</button>
+            </form>
+          </section>
+
+          <section class="card" id="return-card" hidden>
+            <h3>반납</h3>
+            <form id="return-form" class="stack">
+              <label>반납 상태 <select name="condition"></select></label>
+              <label id="return-note-label">메모 <textarea name="note" rows="2" maxlength="500"></textarea></label>
+              <button type="submit" class="button primary">반납</button>
+            </form>
+          </section>
+
+          <section class="card" id="status-card" hidden>
+            <h3>상태 변경</h3>
+            <form id="status-form" class="stack">
+              <label>바꿀 상태 <select name="to"></select></label>
+              <label id="status-note-label">사유 <textarea name="note" rows="2" maxlength="500"></textarea></label>
+              <button type="submit" class="button">변경</button>
+            </form>
+          </section>
+
+          <p id="shared-note" class="muted small card" hidden>공용 장비는 사람에게 배정하지 않고 위치로 관리합니다.</p>
+          <p id="action-error" class="error" role="alert" hidden></p>
+        </aside>
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="/js/asset.js"></script>
+</body>
+</html>

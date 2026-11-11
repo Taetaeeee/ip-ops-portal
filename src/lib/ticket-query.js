@@ -15,6 +15,7 @@ const UPDATABLE_COLUMNS = new Set([
   'action_taken',
   'verification',
   'incident_url',
+  'asset_id',
 ]);
 
 const SLA_FILTERS = new Set(['OVERDUE', 'IMMINENT']);
@@ -58,11 +59,13 @@ export const TICKET_SELECT = `
   SELECT t.*,
          r.name AS requester_name, rd.name AS requester_dept,
          a.name AS assignee_name,
-         (SELECT f.id FROM faq_articles f WHERE f.source_ticket_id = t.id) AS faq_id
+         (SELECT f.id FROM faq_articles f WHERE f.source_ticket_id = t.id) AS faq_id,
+         ast.asset_tag AS asset_tag, ast.asset_type AS asset_type, ast.model AS asset_model, ast.location AS asset_location
     FROM tickets t
     JOIN employees r ON r.emp_no = t.requester_emp_no
     JOIN departments rd ON rd.code = r.dept_code
-    LEFT JOIN employees a ON a.emp_no = t.assignee_emp_no`;
+    LEFT JOIN employees a ON a.emp_no = t.assignee_emp_no
+    LEFT JOIN assets ast ON ast.id = t.asset_id`;
 
 /** 목록 조회 SQL (SLA 필터는 계산이 필요해 호출하는 쪽에서 거른다) */
 export function buildListQuery(filters, limit = 200) {

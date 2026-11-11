@@ -30,6 +30,9 @@ function eventText(ev) {
     case 'NOTE':
       return '처리 메모';
     case 'LINK_CHANGED':
+      if (ev.data?.kind === 'asset') {
+        return ev.data.to ? `관련 자산 연결: ${ev.data.to.assetTag}` : `관련 자산 연결 해제: ${ev.data.from?.assetTag ?? ''}`;
+      }
       return ev.data?.to ? 'Uptime Monitor 장애 링크 저장' : 'Uptime Monitor 장애 링크 삭제';
     case 'FAQ_PUBLISHED':
       return 'FAQ 등록';
@@ -47,7 +50,9 @@ function eventDetails(ev) {
   if (ev.type === 'STATUS_CHANGED' && ev.toStatus === 'RESOLVED' && ev.data) {
     parts.push(el('p', { class: 'small', text: `원인: ${ev.data.cause} / 조치: ${ev.data.action} / 검증: ${ev.data.verification}` }));
   }
-  if (ev.type === 'LINK_CHANGED' && ev.data?.to) parts.push(el('p', { class: 'small break', text: ev.data.to }));
+  if (ev.type === 'LINK_CHANGED' && ev.data?.kind !== 'asset' && ev.data?.to) {
+    parts.push(el('p', { class: 'small break', text: ev.data.to }));
+  }
   return parts;
 }
 
@@ -84,6 +89,17 @@ function render() {
     url && url.startsWith('https://')
       ? el('a', { href: url, target: '_blank', rel: 'noopener noreferrer', class: 'break', text: url })
       : el('span', { class: 'muted', text: '연결된 장애 없음' }),
+  );
+
+  // 3단계: 관련 자산. 자산 상세 링크는 IT 담당자에게만 (직원은 자산 화면 권한 없음)
+  const assetText = (a) => `${a.assetTag} ${a.model}${a.location ? ` (${a.location})` : ''}`;
+  const assetNode = (a) =>
+    meta.viewer.isItStaff ? el('a', { href: `/asset?id=${a.id}`, text: assetText(a) }) : el('span', { text: assetText(a) });
+  $('linked-asset').replaceChildren(t.asset ? assetNode(t.asset) : el('span', { class: 'muted', text: '없음' }));
+  $('requester-assets').replaceChildren(
+    ...(detail.requesterAssets.length
+      ? detail.requesterAssets.flatMap((a, i) => [i ? ', ' : '', assetNode(a)])
+      : [el('span', { class: 'muted', text: '배정된 자산 없음' })]),
   );
 
   $('timeline').replaceChildren(
@@ -124,6 +140,20 @@ function renderItPanel(t) {
   $('incident-form').hidden = false;
   $('incident-form').url.value = t.incidentUrl ?? '';
   $('incident-form').url.placeholder = `${meta.incidentBaseUrl ?? 'https://…'}/…`;
+
+  // 관련 자산 연결: 요청자 자산 + 공용 장비 중에서
+  const assetForm = $('asset-form');
+  assetForm.hidden = false;
+  // 지금 연결된 자산이 후보에 없으면(예: 다른 사람 PC) 목록에 넣어 선택 상태를 유지한다
+  const candidates = [...detail.linkableAssets];
+  if (t.asset && !candidates.some((a) => a.id === t.asset.id)) candidates.unshift(t.asset);
+  assetForm.assetId.replaceChildren(
+    el('option', { value: '', text: '연결 없음' }),
+    ...candidates.map((a) =>
+      el('option', { value: String(a.id), text: `${a.assetTag} ${a.model}${a.location ? ` · ${a.location}` : ' · 요청자 자산'}` }),
+    ),
+  );
+  assetForm.assetId.value = t.asset ? String(t.asset.id) : '';
 
   $('faq-card').hidden = !detail.faqDraft;
   if (detail.faqDraft) {
@@ -177,6 +207,11 @@ function wireForms() {
   $('incident-form').addEventListener('submit', (e) => {
     e.preventDefault();
     act('incident-link', 'PUT', { url: e.target.url.value }, null);
+  });
+  $('asset-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const v = e.target.assetId.value;
+    act('asset', 'PUT', { assetId: v ? Number(v) : null }, null);
   });
   $('faq-form').addEventListener('submit', (e) => {
     e.preventDefault();

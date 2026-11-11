@@ -8,6 +8,7 @@
 import { addBusinessMinutes, subtractBusinessMinutes } from './business-time.js';
 import { computeDueAt, targetMinutes } from './sla.js';
 import { PERSONA_EMP_NO, IT_BACKUP_EMP_NO } from './seed-data.js';
+import { resolveDemoAsset } from './seed-assets.js';
 
 const IT = PERSONA_EMP_NO.it_admin; // DT-0004 정담당
 const BACKUP = IT_BACKUP_EMP_NO; // DT-0003 부담당
@@ -148,12 +149,32 @@ export const TICKET_SPECS = Object.freeze([
     cause: '무선 AP 채널 간섭', action: '창고 AP 채널 변경', verification: '창고 전 구역에서 스캐너 연결 유지 확인' },
 ]);
 
+// 3단계: 데모 티켓 ↔ 관련 자산. 'holder' = 요청자의 개인 PC, 그 외 = 공용 장비 key (seed-assets.js)
+export const TICKET_ASSET_REFS = Object.freeze({
+  '생산라인 2번 PC 네트워크 끊김': 'line-2',
+  '노트북 부팅 시 BitLocker 복구 키 요구': 'holder',
+  '자재물류팀 라벨 프린터 출력 안 됨 (출하 지연)': 'printer-label',
+  '생산팀 공용 PC 바이러스 경고 창 반복': 'line-1',
+  '품질관리팀 PC 키보드 일부 키 입력 안 됨': 'holder',
+  '제1공장 사무동 스위치 포트 불량 의심': 'switch-plant',
+  '생산팀 복합기 "용지 걸림" 오류 반복': 'printer-prod',
+  '설비보전팀 노트북 배터리 부풀음': 'holder',
+  'ERP 발주서 출력 시 프로그램 종료': 'holder',
+  '품질관리팀 프린터 인쇄 대기열 멈춤': 'printer-qc',
+  '생산라인 3번 PC 부팅 불가': 'line-3',
+  '창고 무선 바코드 스캐너 연결 끊김': 'ap-warehouse',
+});
+
 /**
- * @param {{now: Date, cfg: object}} param0
+ * @param {{now: Date, cfg: object, assets?: object}} param0 assets = generateDemoAssets() 결과 (없으면 자산 연결 없음)
  * @returns {{tickets: object[], events: object[], faqs: object[]}}
  */
-export function generateDemoTickets({ now, cfg }) {
-  const built = TICKET_SPECS.map((spec) => buildOne(spec, now, cfg));
+export function generateDemoTickets({ now, cfg, assets = null }) {
+  const built = TICKET_SPECS.map((spec) => {
+    const b = buildOne(spec, now, cfg);
+    b.ticket.assetId = resolveDemoAsset(assets, TICKET_ASSET_REFS[spec.title], spec.by);
+    return b;
+  });
 
   // 접수 시각 순으로 번호를 매긴다 (먼저 들어온 요청이 낮은 번호)
   built.sort((a, b) => a.createdAt - b.createdAt);

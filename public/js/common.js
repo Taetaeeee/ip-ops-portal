@@ -60,6 +60,10 @@ export async function initShell(active) {
     location.replace('/');
   });
   const me = await api('/api/me');
+  // IT 담당자 전용 메뉴 (화면에서 숨기는 것일 뿐, 권한 검사는 서버가 한다)
+  if (me.persona === 'it_admin') {
+    for (const a of document.querySelectorAll('[data-it-only]')) a.hidden = false;
+  }
   const e = me.employee;
   $('user-info').textContent = `${me.personaLabel} · ${e.name} ${e.jobTitle} (${e.department})`;
   return me;

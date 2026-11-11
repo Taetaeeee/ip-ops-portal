@@ -145,7 +145,42 @@ export function planLinkChange(ticket, input, { baseUrl }) {
         fromStatus: null,
         toStatus: null,
         note: null,
-        data: { from: ticket.incidentUrl ?? null, to: v.value },
+        data: { kind: 'incident', from: ticket.incidentUrl ?? null, to: v.value },
+      },
+    ],
+  };
+}
+
+/**
+ * 관련 자산 연결·해제 (3단계).
+ * 이력은 B 링크와 같은 LINK_CHANGED 에 kind: 'asset' 을 붙여 남긴다.
+ * (새 이벤트 종류를 만들려면 ticket_events 의 CHECK 제약 때문에 테이블을 다시 만들어야 해서 재사용)
+ * @param {{assetId: number|null}} input
+ * @param {{asset: {id, assetTag, status}|null}} ctx  input.assetId 로 찾은 자산 (없으면 null)
+ */
+export function planAssetLink(ticket, input, { asset, currentAssetTag }) {
+  const raw = input?.assetId;
+  const wanted = raw === null || raw === undefined || raw === '' ? null : Number(raw);
+  if (wanted !== null && !(Number.isSafeInteger(wanted) && wanted > 0)) {
+    return fail(400, 'INVALID_ASSET', '자산을 골라야 합니다');
+  }
+  if (wanted !== null && !asset) return fail(400, 'INVALID_ASSET', '없는 자산입니다');
+  if (asset && asset.status === 'DISPOSED') return fail(409, 'ASSET_DISPOSED', '폐기된 자산은 연결할 수 없습니다');
+  if (wanted === (ticket.assetId ?? null)) return fail(409, 'NO_CHANGE', '바뀐 내용이 없습니다');
+  return {
+    ok: true,
+    changes: { asset_id: wanted },
+    events: [
+      {
+        eventType: 'LINK_CHANGED',
+        fromStatus: null,
+        toStatus: null,
+        note: null,
+        data: {
+          kind: 'asset',
+          from: ticket.assetId ? { id: ticket.assetId, assetTag: currentAssetTag ?? null } : null,
+          to: asset ? { id: asset.id, assetTag: asset.assetTag } : null,
+        },
       },
     ],
   };

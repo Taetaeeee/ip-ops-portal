@@ -8,13 +8,18 @@
 
 import { buildInsertStatements } from './sql-util.js';
 
-// 지우는 순서: 다른 테이블이 참조하는 쪽(부모)을 나중에 지운다.
-// faq_articles·ticket_events → tickets → employees → departments → sites
+// 지우는 순서: 다른 테이블이 참조하는 쪽(자식)을 먼저, 참조되는 쪽(부모)을 나중에.
+// 티켓 → 자산 참조가 있으므로 티켓을 자산보다 먼저 지운다.
 export const DELETE_ORDER = Object.freeze([
   'sessions',
   'faq_articles',
   'ticket_events',
   'tickets',
+  'asset_software',
+  'asset_assignments',
+  'software_allowlist',
+  'licenses',
+  'assets',
   'employees',
   'departments',
   'sites',
@@ -25,33 +30,56 @@ export const INSERT_COLUMNS = Object.freeze({
   sites: ['code', 'name', 'kind', 'sort_order'],
   departments: ['code', 'name', 'site_code', 'sort_order'],
   employees: ['emp_no', 'name', 'dept_code', 'job_title', 'is_team_lead', 'duty', 'hire_date', 'extension'],
+  assets: [
+    'id', 'asset_tag', 'asset_type', 'manufacturer', 'model', 'serial_no', 'purchased_on', 'status',
+    'location', 'status_note', 'status_changed_at', 'version',
+  ],
+  asset_assignments: [
+    'asset_id', 'emp_no', 'assigned_at', 'assigned_by', 'assign_note',
+    'returned_at', 'returned_by', 'return_condition', 'return_note',
+  ],
+  asset_software: ['asset_id', 'software_name', 'version', 'installed_on'],
+  licenses: ['id', 'product_name', 'vendor', 'license_type', 'quantity', 'expires_on', 'contract_no'],
+  software_allowlist: ['id', 'pattern', 'match_type', 'license_id', 'note'],
   tickets: [
     'id', 'requester_emp_no', 'category', 'priority', 'title', 'symptom', 'status', 'assignee_emp_no',
     'created_at', 'updated_at', 'sla_due_at', 'sla_paused_minutes', 'hold_started_at', 'resolved_at',
-    'cause', 'action_taken', 'verification', 'incident_url', 'version',
+    'cause', 'action_taken', 'verification', 'incident_url', 'version', 'asset_id',
   ],
   ticket_events: ['ticket_id', 'event_type', 'actor_emp_no', 'from_status', 'to_status', 'note', 'data', 'created_at'],
   faq_articles: ['id', 'source_ticket_id', 'category', 'title', 'question', 'answer', 'published_by', 'created_at'],
 });
 
 const EMPTY_HELPDESK = Object.freeze({ tickets: [], events: [], faqs: [] });
+const EMPTY_INVENTORY = Object.freeze({ assets: [], assignments: [], software: [], licenses: [], allowlist: [] });
 
 /**
  * @param {{sites: any[], departments: any[], employees: any[]}} data generateSeedData() 결과
  * @param {{tickets: any[], events: any[], faqs: any[]}} helpdesk generateDemoTickets() 결과
+ * @param {{assets, assignments, software, licenses, allowlist}} inventory generateDemoAssets() 결과
  * @returns {{sql: string, params: any[]}[]}
  */
-export function buildResetStatements(data, helpdesk = EMPTY_HELPDESK) {
+export function buildResetStatements(data, helpdesk = EMPTY_HELPDESK, inventory = EMPTY_INVENTORY) {
   const rows = {
     sites: data.sites.map((s) => [s.code, s.name, s.kind, s.sortOrder]),
     departments: data.departments.map((d) => [d.code, d.name, d.siteCode, d.sortOrder]),
     employees: data.employees.map((e) => [
       e.empNo, e.name, e.deptCode, e.jobTitle, e.isTeamLead ? 1 : 0, e.duty, e.hireDate, e.extension,
     ]),
+    assets: inventory.assets.map((a) => [
+      a.id, a.assetTag, a.assetType, a.manufacturer, a.model, a.serialNo, a.purchasedOn, a.status,
+      a.location, a.statusNote, a.statusChangedAt, a.version,
+    ]),
+    asset_assignments: inventory.assignments.map((x) => [
+      x.assetId, x.empNo, x.assignedAt, x.assignedBy, x.assignNote, x.returnedAt, x.returnedBy, x.returnCondition, x.returnNote,
+    ]),
+    asset_software: inventory.software.map((s) => [s.assetId, s.softwareName, s.version, s.installedOn]),
+    licenses: inventory.licenses.map((l) => [l.id, l.productName, l.vendor, l.licenseType, l.quantity, l.expiresOn, l.contractNo]),
+    software_allowlist: inventory.allowlist.map((w) => [w.id, w.pattern, w.matchType, w.licenseId, w.note]),
     tickets: helpdesk.tickets.map((t) => [
       t.id, t.requesterEmpNo, t.category, t.priority, t.title, t.symptom, t.status, t.assigneeEmpNo,
       t.createdAt, t.updatedAt, t.slaDueAt, t.slaPausedMinutes, t.holdStartedAt, t.resolvedAt,
-      t.cause, t.actionTaken, t.verification, t.incidentUrl, t.version,
+      t.cause, t.actionTaken, t.verification, t.incidentUrl, t.version, t.assetId ?? null,
     ]),
     ticket_events: helpdesk.events.map((e) => [
       e.ticketId, e.eventType, e.actorEmpNo, e.fromStatus, e.toStatus, e.note, e.data, e.createdAt,

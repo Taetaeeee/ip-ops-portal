@@ -13,6 +13,7 @@ import {
   planNote,
   planLinkChange,
   planFaq,
+  planAssetLink,
   buildFaqDraft,
 } from './lib/ticket-commands.js';
 import {
@@ -52,8 +53,33 @@ function rowToTicket(row) {
     actionTaken: row.action_taken,
     verification: row.verification,
     incidentUrl: row.incident_url,
+    assetId: row.asset_id ?? null,
     version: row.version,
   };
+}
+
+const assetSummary = (r) => ({ id: r.id, assetTag: r.asset_tag, assetType: r.asset_type, model: r.model, location: r.location ?? null });
+
+/** 요청자에게 지금 배정된 자산 (반납 안 된 배정) */
+async function loadRequesterAssets(env, empNo) {
+  const { results } = await env.DB.prepare(
+    `SELECT a.id, a.asset_tag, a.asset_type, a.model, a.location
+       FROM asset_assignments x JOIN assets a ON a.id = x.asset_id
+      WHERE x.emp_no = ? AND x.returned_at IS NULL
+      ORDER BY a.asset_tag`,
+  )
+    .bind(empNo)
+    .all();
+  return results.map(assetSummary);
+}
+
+/** 공용 장비 (위치로 관리, 폐기 제외) - 티켓에 연결할 후보 */
+async function loadSharedAssets(env) {
+  const { results } = await env.DB.prepare(
+    `SELECT id, asset_tag, asset_type, model, location FROM assets
+      WHERE location IS NOT NULL AND status <> 'DISPOSED' ORDER BY asset_tag`,
+  ).all();
+  return results.map(assetSummary);
 }
 
 function ticketDto(row, now) {
@@ -77,6 +103,9 @@ function ticketDto(row, now) {
     resolution: t.status === 'RESOLVED' ? { cause: t.cause, action: t.actionTaken, verification: t.verification } : null,
     incidentUrl: t.incidentUrl,
     faqId: row.faq_id ?? null,
+    asset: t.assetId
+      ? { id: t.assetId, assetTag: row.asset_tag, assetType: row.asset_type, model: row.asset_model, location: row.asset_location }
+      : null,
   };
 }
 
@@ -116,8 +145,13 @@ async function ticketDetail(env, id, session) {
 
   const ticket = ticketDto(row, now);
   const staff = isItStaff(session);
+  // 3단계: 요청자에게 배정된 자산 (IT 담당자와 요청자 본인 모두 볼 수 있다)
+  const requesterAssets = await loadRequesterAssets(env, row.requester_emp_no);
   return {
     ticket,
+    requesterAssets,
+    // IT 담당자가 연결할 수 있는 자산 후보: 요청자 자산 + 공용 장비
+    linkableAssets: staff ? [...requesterAssets, ...(await loadSharedAssets(env))] : [],
     events: results.map((e) => ({
       id: e.id,
       type: e.event_type,
@@ -262,6 +296,19 @@ export const handleNote = (request, env, params) =>
 
 export const handleIncidentLink = (request, env, params) =>
   runCommand(request, env, params, (ticket, body) => planLinkChange(ticket, body, { baseUrl: env.UPTIME_MONITOR_BASE_URL }));
+
+export const handleTicketAsset = (request, env, params) =>
+  runCommand(request, env, params, async (ticket, body, ctx) => {
+    const id = Number(body?.assetId);
+    const asset =
+      Number.isSafeInteger(id) && id > 0
+        ? await env.DB.prepare('SELECT id, asset_tag, status FROM assets WHERE id = ?').bind(id).first()
+        : null;
+    return planAssetLink(ticket, body, {
+      asset: asset ? { id: asset.id, assetTag: asset.asset_tag, status: asset.status } : null,
+      currentAssetTag: ctx.row.asset_tag,
+    });
+  });
 
 export const handleFaqCreate = (request, env, params) =>
   runCommand(request, env, params, (ticket, body, ctx) => planFaq(ticket, body, { hasFaq: ctx.row.faq_id != null }));

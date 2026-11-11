@@ -8,6 +8,7 @@ import { runReset } from './reset.js';
 import { isValidPersona, PERSONAS, buildSessionCookie, buildClearCookie } from './lib/session.js';
 import { COMPANY } from './lib/seed-data.js';
 import * as helpdesk from './helpdesk.js';
+import * as assets from './assets.js';
 
 // [메서드, 경로 패턴, 처리 함수]. 경로의 :id 는 숫자만 받는다.
 const ROUTE_TABLE = [
@@ -27,6 +28,15 @@ const ROUTE_TABLE = [
   ['PUT', '/api/tickets/:id/incident-link', helpdesk.handleIncidentLink],
   ['POST', '/api/tickets/:id/faq', helpdesk.handleFaqCreate],
   ['GET', '/api/faq', helpdesk.handleFaqList],
+  ['PUT', '/api/tickets/:id/asset', helpdesk.handleTicketAsset],
+  // 3단계 IT 자산·라이선스 (IT 담당자 전용)
+  ['GET', '/api/assets/meta', assets.handleAssetMeta],
+  ['GET', '/api/assets', assets.handleAssetList],
+  ['GET', '/api/assets/:id', assets.handleAssetDetail],
+  ['POST', '/api/assets/:id/assign', assets.handleAssetAssign],
+  ['POST', '/api/assets/:id/return', assets.handleAssetReturn],
+  ['POST', '/api/assets/:id/status', assets.handleAssetStatus],
+  ['GET', '/api/licenses', assets.handleLicenses],
 ];
 
 // '/api/tickets/:id' → /^\/api\/tickets\/(?<id>\d+)$/

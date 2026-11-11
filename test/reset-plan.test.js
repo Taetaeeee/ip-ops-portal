@@ -4,10 +4,13 @@ import { buildResetStatements, DELETE_ORDER, INSERT_COLUMNS } from '../src/lib/r
 import { generateSeedData } from '../src/lib/seed-data.js';
 import { generateDemoTickets } from '../src/lib/seed-tickets.js';
 import { SLA_CONFIG } from '../src/lib/sla-config.js';
+import { generateDemoAssets } from '../src/lib/seed-assets.js';
 
+const NOW = new Date('2026-11-17T04:30:00+09:00');
 const data = generateSeedData();
-const helpdesk = generateDemoTickets({ now: new Date('2026-11-17T04:30:00+09:00'), cfg: SLA_CONFIG });
-const statements = buildResetStatements(data, helpdesk);
+const inventory = generateDemoAssets({ employees: data.employees, now: NOW });
+const helpdesk = generateDemoTickets({ now: NOW, cfg: SLA_CONFIG, assets: inventory });
+const statements = buildResetStatements(data, helpdesk, inventory);
 
 const isDelete = (s) => s.sql.startsWith('DELETE');
 const isInsertInto = (table) => (s) => s.sql.startsWith(`INSERT INTO ${table} (`);
@@ -28,10 +31,17 @@ test('지우기는 자식 → 부모 순서 (참조 무결성)', () => {
   assert.ok(pos('faq_articles') < pos('tickets'));
   assert.ok(pos('tickets') < pos('employees'));
   assert.ok(pos('sessions') < pos('employees'));
+  assert.ok(pos('tickets') < pos('assets'), '티켓이 자산을 참조');
+  assert.ok(pos('asset_software') < pos('assets'));
+  assert.ok(pos('asset_assignments') < pos('assets'));
+  assert.ok(pos('software_allowlist') < pos('licenses'));
 });
 
 test('넣기는 부모 → 자식 순서', () => {
-  const order = ['sites', 'departments', 'employees', 'tickets', 'ticket_events', 'faq_articles'];
+  const order = [
+    'sites', 'departments', 'employees', 'assets', 'asset_assignments', 'asset_software',
+    'licenses', 'software_allowlist', 'tickets', 'ticket_events', 'faq_articles',
+  ];
   for (let i = 0; i < order.length - 1; i++) {
     assert.ok(lastIndex(isInsertInto(order[i])) < firstIndex(isInsertInto(order[i + 1])), `${order[i]} → ${order[i + 1]}`);
   }
@@ -44,6 +54,10 @@ test('행 수가 시드 데이터와 같다', () => {
   assert.equal(rowCount('tickets'), 30);
   assert.equal(rowCount('ticket_events'), helpdesk.events.length);
   assert.equal(rowCount('faq_articles'), 3);
+  assert.equal(rowCount('assets'), 60);
+  assert.equal(rowCount('licenses'), 8);
+  assert.equal(rowCount('asset_assignments'), inventory.assignments.length);
+  assert.equal(rowCount('asset_software'), inventory.software.length);
 });
 
 test('문장마다 자리표시자(?) 수 = 매개변수 수, 매개변수는 100개 이하', () => {
@@ -54,7 +68,7 @@ test('문장마다 자리표시자(?) 수 = 매개변수 수, 매개변수는 10
 });
 
 test('여러 행을 묶어 문장 수가 적다 (D1 batch 부담 줄이기)', () => {
-  assert.ok(statements.length < 50, `문장 수 ${statements.length}`);
+  assert.ok(statements.length < 80, `문장 수 ${statements.length}`);
 });
 
 test('값이 SQL 문자열에 직접 들어가지 않는다 (따옴표가 든 이름으로 확인)', () => {

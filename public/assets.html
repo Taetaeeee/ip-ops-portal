@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IT 자산 · 도담테크산업 IT 운영 포털 (시뮬레이션)</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="sim-banner" role="note">
+    <strong>시뮬레이션</strong>
+    가상 회사 ‘도담테크산업’의 데모입니다. 실제 회사·인물·시스템과 관계없으며, 데이터는 매일 04:30(KST)에 초기화됩니다.
+  </div>
+
+  <header class="topbar">
+    <div class="brand">도담테크산업 <span>IT 운영 포털</span></div>
+    <nav class="mainnav" aria-label="주 메뉴">
+      <a href="/app" data-nav="home">홈</a>
+      <a href="/tickets" data-nav="tickets">헬프데스크</a>
+      <a href="/faq" data-nav="faq">FAQ</a>
+      <a href="/assets" data-nav="assets" data-it-only hidden>자산</a>
+      <a href="/licenses" data-nav="licenses" data-it-only hidden>라이선스</a>
+    </nav>
+    <div class="user">
+      <span id="user-info" class="muted">불러오는 중…</span>
+      <button type="button" id="logout" class="link-button">로그아웃</button>
+    </div>
+  </header>
+
+  <main class="content">
+    <div class="page-head">
+      <h2>IT 자산</h2>
+      <a class="button" href="/licenses">라이선스 현황</a>
+    </div>
+
+    <form id="filters" class="filters">
+      <label>종류 <select name="type"></select></label>
+      <label>상태 <select name="status"></select></label>
+      <label class="grow">검색 <input type="search" name="q" maxlength="100" placeholder="자산 번호·모델·시리얼·사용자·위치"></label>
+      <button type="submit" class="button">조회</button>
+    </form>
+
+    <p id="list-error" class="error" role="alert" hidden></p>
+    <p id="count" class="muted"></p>
+    <div class="table-wrap">
+      <table id="asset-table" class="tickets"></table>
+    </div>
+  </main>
+
+  <script type="module" src="/js/assets.js"></script>
+</body>
+</html>

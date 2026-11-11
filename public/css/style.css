@@ -271,6 +271,49 @@ table.tickets td, table.tickets th { padding: 8px; vertical-align: top; }
 }
 .timeline p { margin: 4px 0 0; }
 
+/* ───────── 3단계: 자산·라이선스 ───────── */
+
+.asset-in_use { background: var(--ok-bg); color: var(--ok-text); }
+.asset-in_stock { background: var(--accent-soft); color: var(--accent); }
+.asset-repair { background: var(--warn-bg); color: var(--warn-text); font-weight: 600; }
+.asset-disposed { background: var(--neutral-bg); color: var(--neutral-text); text-decoration: line-through; }
+.sw-licensed { background: var(--accent-soft); color: var(--accent); }
+.sw-allowed { background: var(--neutral-bg); color: var(--neutral-text); }
+.sw-unauthorized { background: var(--danger-bg); color: var(--danger-text); font-weight: 600; }
+
+.table-wrap.plain { border: none; background: transparent; }
+.plain-list { margin: 0; padding-left: 18px; }
+.plain-list li { margin: 2px 0; }
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin: 12px 0 16px;
+}
+.summary-card {
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.summary-card .summary-value { font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.summary-card .summary-label { font-weight: 600; }
+.summary-card.danger { background: var(--danger-bg); color: var(--danger-text); border-color: transparent; }
+.summary-card.warn { background: var(--warn-bg); color: var(--warn-text); border-color: transparent; }
+.summary-card.ok .summary-value { color: var(--ok-text); }
+.summary-card.danger .muted, .summary-card.warn .muted { color: inherit; opacity: 0.85; }
+
+.usage { width: 120px; height: 10px; border-radius: 999px; background: var(--neutral-bg); overflow: hidden; }
+.usage-bar { height: 100%; background: var(--ok-text); }
+.usage-bar.high { background: var(--warn-text); }
+.usage-bar.over { background: var(--danger-text); }
+tr.row-alert td { background: color-mix(in srgb, var(--danger-bg) 45%, transparent); }
+
+.content > section.card { margin-bottom: 16px; }
+.unauth-item { padding: 8px 0; border-bottom: 1px solid var(--border); }
+.unauth-item:last-child { border-bottom: none; }
+
 /* FAQ */
 details.faq summary { cursor: pointer; font-weight: 600; }
 details.faq h4 { margin: 12px 0 4px; font-size: 13px; color: var(--muted); }

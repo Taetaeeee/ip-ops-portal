@@ -5,6 +5,7 @@
 
 import { generateSeedData } from './lib/seed-data.js';
 import { generateDemoTickets } from './lib/seed-tickets.js';
+import { generateDemoAssets } from './lib/seed-assets.js';
 import { buildResetStatements } from './lib/reset-plan.js';
 import { SLA_CONFIG } from './lib/sla-config.js';
 
@@ -15,9 +16,11 @@ import { SLA_CONFIG } from './lib/sla-config.js';
 export async function runReset(env, triggerType, now = new Date()) {
   const startedAt = now.toISOString();
   const data = generateSeedData();
-  // 데모 티켓은 초기화 시각 기준 상대 시각으로 만든다 (매일 같은 SLA 분포)
-  const helpdesk = generateDemoTickets({ now, cfg: SLA_CONFIG });
-  const statements = buildResetStatements(data, helpdesk);
+  // 자산·라이선스 (라이선스 만료일은 초기화 날짜 기준 상대 날짜)
+  const inventory = generateDemoAssets({ employees: data.employees, now });
+  // 데모 티켓은 초기화 시각 기준 상대 시각으로 만든다 (매일 같은 SLA 분포). 관련 자산도 연결
+  const helpdesk = generateDemoTickets({ now, cfg: SLA_CONFIG, assets: inventory });
+  const statements = buildResetStatements(data, helpdesk, inventory);
 
   let result;
   try {
@@ -27,6 +30,8 @@ export async function runReset(env, triggerType, now = new Date()) {
       statements: statements.length,
       employees: data.employees.length,
       tickets: helpdesk.tickets.length,
+      assets: inventory.assets.length,
+      licenses: inventory.licenses.length,
     };
   } catch (err) {
     console.error('데모 초기화 실패', err);
