@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>도담테크산업 IT 운영 포털 (시뮬레이션)</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="sim-banner" role="note">
+    <strong>시뮬레이션</strong>
+    가상 회사 ‘도담테크산업’의 데모입니다. 실제 회사·인물·시스템과 관계없으며, 데이터는 매일 04:30(KST)에 초기화됩니다.
+  </div>
+
+  <main class="login">
+    <h1>도담테크산업 <span>IT 운영 포털</span></h1>
+    <p class="muted">데모 계정(페르소나)을 골라 들어가세요. 비밀번호는 없습니다.</p>
+
+    <div class="persona-list">
+      <button type="button" class="persona" data-persona="it_admin">
+        <strong>IT 담당자</strong>
+        <span>경영지원팀 · 전산·IT 운영 담당</span>
+      </button>
+      <button type="button" class="persona" data-persona="employee">
+        <strong>일반 직원</strong>
+        <span>영업팀 직원</span>
+      </button>
+    </div>
+
+    <p id="login-error" class="error" role="alert" hidden></p>
+  </main>
+
+  <script type="module" src="/js/login.js"></script>
+</body>
+</html>

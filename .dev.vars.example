@@ -1,0 +1,6 @@
+# 로컬 개발용 비밀 값 견본.
+# 이 파일을 복사해 .dev.vars 를 만들고 값을 바꾼다. (.dev.vars 는 git 에 올라가지 않는다)
+# 배포 환경에는 `npx wrangler secret put ADMIN_TOKEN` 으로 따로 넣는다.
+
+# 수동 데모 초기화(POST /api/admin/reset)에 쓰는 관리자 토큰. 길고 무작위인 값으로.
+ADMIN_TOKEN=여기에-32자-이상-무작위-값

@@ -1,0 +1,17 @@
+# 의존성
+node_modules/
+
+# wrangler 로컬 상태 (로컬 D1 데이터 포함)
+.wrangler/
+
+# 비밀 값 - 절대 커밋하지 않는다. 견본(.dev.vars.example)만 커밋한다.
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
+.env
+.env.*
+
+# 기타
+*.log
+.DS_Store
+Thumbs.db

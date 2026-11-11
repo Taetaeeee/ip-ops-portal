@@ -1,0 +1,17 @@
+{
+  "name": "ip-ops-portal",
+  "version": "0.1.0",
+  "private": true,
+  "description": "도담테크산업 IT 운영 포털 (시뮬레이션) - Cloudflare Workers + D1",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "test": "node --test",
+    "db:migrate:local": "wrangler d1 migrations apply DB --local",
+    "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "4.160.0"
+  }
+}
