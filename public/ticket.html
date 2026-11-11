@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>요청 상세 · 도담테크산업 IT 운영 포털 (시뮬레이션)</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="sim-banner" role="note">
+    <strong>시뮬레이션</strong>
+    가상 회사 ‘도담테크산업’의 데모입니다. 실제 회사·인물·시스템과 관계없으며, 데이터는 매일 04:30(KST)에 초기화됩니다.
+  </div>
+
+  <header class="topbar">
+    <div class="brand">도담테크산업 <span>IT 운영 포털</span></div>
+    <nav class="mainnav" aria-label="주 메뉴">
+      <a href="/app" data-nav="home">홈</a>
+      <a href="/tickets" data-nav="tickets">헬프데스크</a>
+      <a href="/faq" data-nav="faq">FAQ</a>
+    </nav>
+    <div class="user">
+      <span id="user-info" class="muted">불러오는 중…</span>
+      <button type="button" id="logout" class="link-button">로그아웃</button>
+    </div>
+  </header>
+
+  <main class="content">
+    <p><a href="/tickets">← 목록으로</a></p>
+    <p id="page-error" class="error" role="alert" hidden></p>
+
+    <div id="ticket" hidden>
+      <div class="ticket-head">
+        <h2 id="title"></h2>
+        <div id="badges" class="badges"></div>
+      </div>
+
+      <div class="detail-grid">
+        <div class="stack">
+          <section class="card">
+            <h3>요청 정보</h3>
+            <dl id="info" class="info"></dl>
+          </section>
+
+          <section class="card">
+            <h3>증상</h3>
+            <p id="symptom" class="pre"></p>
+          </section>
+
+          <section id="resolution-card" class="card" hidden>
+            <h3>처리 결과</h3>
+            <dl id="resolution" class="info"></dl>
+          </section>
+
+          <section id="incident-card" class="card">
+            <h3>관련 서비스 장애 <span class="source-tag">Uptime Monitor</span></h3>
+            <p id="incident-view"></p>
+            <p class="muted small">Uptime Monitor에서 가져온 링크입니다. 링크만 저장하며, Uptime Monitor는 매일 데모 데이터를 다시 넣어 링크 대상이 바뀔 수 있습니다.</p>
+            <form id="incident-form" class="inline-form" hidden>
+              <input type="url" name="url" maxlength="500" placeholder="https://…/incidents/…">
+              <button type="submit" class="button">저장</button>
+            </form>
+          </section>
+
+          <section class="card">
+            <h3>처리 이력</h3>
+            <ol id="timeline" class="timeline"></ol>
+          </section>
+        </div>
+
+        <aside id="it-panel" class="stack" hidden>
+          <section class="card">
+            <h3>담당자</h3>
+            <form id="assign-form" class="inline-form">
+              <select name="assigneeEmpNo"></select>
+              <button type="submit" class="button">배정</button>
+            </form>
+          </section>
+
+          <section class="card" id="status-card">
+            <h3>상태 변경</h3>
+            <form id="status-form" class="stack">
+              <label>바꿀 상태 <select name="to"></select></label>
+              <label id="note-label">메모 <textarea name="note" rows="2" maxlength="2000"></textarea></label>
+              <div id="resolution-fields" class="stack" hidden>
+                <label>원인 <textarea name="cause" rows="2" maxlength="1000"></textarea></label>
+                <label>조치 <textarea name="action" rows="2" maxlength="1000"></textarea></label>
+                <label>검증 결과 <textarea name="verification" rows="2" maxlength="1000"
+                  placeholder="예: 사용자 PC에서 테스트 출력 정상 확인"></textarea></label>
+              </div>
+              <button type="submit" class="button primary">변경</button>
+            </form>
+          </section>
+
+          <section class="card" id="note-card">
+            <h3>처리 메모</h3>
+            <form id="note-form" class="stack">
+              <textarea name="note" rows="3" maxlength="2000" placeholder="확인한 내용, 연락 기록 등"></textarea>
+              <button type="submit" class="button">메모 추가</button>
+            </form>
+          </section>
+
+          <section class="card" id="faq-card" hidden>
+            <h3>FAQ로 등록</h3>
+            <p class="muted small">요청자 이름·부서 같은 개인 정보는 넣지 마세요.</p>
+            <form id="faq-form" class="stack">
+              <label>제목 <input name="title" maxlength="100"></label>
+              <label>질문(증상) <textarea name="question" rows="3" maxlength="2000"></textarea></label>
+              <label>답변 <textarea name="answer" rows="5" maxlength="4000"></textarea></label>
+              <button type="submit" class="button">FAQ 등록</button>
+            </form>
+          </section>
+
+          <p id="action-error" class="error" role="alert" hidden></p>
+        </aside>
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="/js/ticket.js"></script>
+</body>
+</html>

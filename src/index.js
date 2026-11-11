@@ -7,26 +7,48 @@ import { createSession, getSession, deleteSession, checkAdmin } from './auth.js'
 import { runReset } from './reset.js';
 import { isValidPersona, PERSONAS, buildSessionCookie, buildClearCookie } from './lib/session.js';
 import { COMPANY } from './lib/seed-data.js';
+import * as helpdesk from './helpdesk.js';
 
-// [메서드, 경로] → 처리 함수
-const routes = {
-  'POST /api/demo/login': handleLogin,
-  'POST /api/demo/logout': handleLogout,
-  'GET /api/me': handleMe,
-  'GET /api/org/summary': handleOrgSummary,
-  'POST /api/admin/reset': handleAdminReset,
-};
+// [메서드, 경로 패턴, 처리 함수]. 경로의 :id 는 숫자만 받는다.
+const ROUTE_TABLE = [
+  ['POST', '/api/demo/login', handleLogin],
+  ['POST', '/api/demo/logout', handleLogout],
+  ['GET', '/api/me', handleMe],
+  ['GET', '/api/org/summary', handleOrgSummary],
+  ['POST', '/api/admin/reset', handleAdminReset],
+  // 2단계 헬프데스크
+  ['GET', '/api/helpdesk/meta', helpdesk.handleMeta],
+  ['GET', '/api/tickets', helpdesk.handleList],
+  ['POST', '/api/tickets', helpdesk.handleCreate],
+  ['GET', '/api/tickets/:id', helpdesk.handleDetail],
+  ['POST', '/api/tickets/:id/assign', helpdesk.handleAssign],
+  ['POST', '/api/tickets/:id/status', helpdesk.handleStatus],
+  ['POST', '/api/tickets/:id/notes', helpdesk.handleNote],
+  ['PUT', '/api/tickets/:id/incident-link', helpdesk.handleIncidentLink],
+  ['POST', '/api/tickets/:id/faq', helpdesk.handleFaqCreate],
+  ['GET', '/api/faq', helpdesk.handleFaqList],
+];
+
+// '/api/tickets/:id' → /^\/api\/tickets\/(?<id>\d+)$/
+const routes = ROUTE_TABLE.map(([method, pattern, handler]) => ({
+  method,
+  regex: new RegExp(`^${pattern.replace(/:(\w+)/g, '(?<$1>\\d+)')}$`),
+  handler,
+}));
 
 async function route(request, env) {
   const { pathname } = new URL(request.url);
   if (!pathname.startsWith('/api/')) {
     return new Response('Not Found', { status: 404 });
   }
-  const handler = routes[`${request.method} ${pathname}`];
-  if (handler) return handler(request, env);
-
-  const knownPath = Object.keys(routes).some((k) => k.endsWith(` ${pathname}`));
-  return knownPath
+  let pathMatched = false;
+  for (const r of routes) {
+    const m = r.regex.exec(pathname);
+    if (!m) continue;
+    pathMatched = true;
+    if (r.method === request.method) return r.handler(request, env, m.groups ?? {});
+  }
+  return pathMatched
     ? error(405, 'METHOD_NOT_ALLOWED', '허용되지 않은 메서드입니다')
     : error(404, 'NOT_FOUND', '없는 API입니다');
 }

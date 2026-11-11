@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>새 요청 · 도담테크산업 IT 운영 포털 (시뮬레이션)</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="sim-banner" role="note">
+    <strong>시뮬레이션</strong>
+    가상 회사 ‘도담테크산업’의 데모입니다. 실제 회사·인물·시스템과 관계없으며, 데이터는 매일 04:30(KST)에 초기화됩니다.
+  </div>
+
+  <header class="topbar">
+    <div class="brand">도담테크산업 <span>IT 운영 포털</span></div>
+    <nav class="mainnav" aria-label="주 메뉴">
+      <a href="/app" data-nav="home">홈</a>
+      <a href="/tickets" data-nav="tickets">헬프데스크</a>
+      <a href="/faq" data-nav="faq">FAQ</a>
+    </nav>
+    <div class="user">
+      <span id="user-info" class="muted">불러오는 중…</span>
+      <button type="button" id="logout" class="link-button">로그아웃</button>
+    </div>
+  </header>
+
+  <main class="content narrow">
+    <p><a href="/tickets">← 목록으로</a></p>
+    <h2>새 요청 접수</h2>
+    <p class="muted small">먼저 <a href="/faq">FAQ</a>에 같은 문제가 있는지 확인해 보세요.</p>
+
+    <form id="new-ticket" class="stack" novalidate>
+      <label>분류
+        <select name="category" required></select>
+      </label>
+
+      <fieldset>
+        <legend>긴급도</legend>
+        <div id="priorities" class="radio-list"></div>
+      </fieldset>
+
+      <label>제목
+        <input name="title" required maxlength="100" placeholder="예: 생산라인 2번 PC 네트워크 끊김">
+      </label>
+
+      <label>증상
+        <textarea name="symptom" required maxlength="2000" rows="6"
+          placeholder="언제부터, 어떤 화면·메시지가 나오는지, 다른 사람도 같은지 적어 주세요."></textarea>
+      </label>
+
+      <p id="form-error" class="error" role="alert" hidden></p>
+      <button type="submit" class="button primary">접수</button>
+    </form>
+  </main>
+
+  <script type="module" src="/js/ticket-new.js"></script>
+</body>
+</html>

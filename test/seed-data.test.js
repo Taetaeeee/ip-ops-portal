@@ -5,6 +5,8 @@ import {
   DEPARTMENTS,
   PERSONA_EMP_NO,
   IT_DUTY,
+  IT_BACKUP_DUTY,
+  IT_BACKUP_EMP_NO,
   COMPANY,
 } from '../src/lib/seed-data.js';
 
@@ -76,4 +78,12 @@ test('페르소나 직원: IT 담당자는 경영지원팀 전산 담당, 일반
   assert.equal(emp.isTeamLead, false);
   // 전산 담당은 한 명뿐
   assert.equal(data.employees.filter((e) => e.duty === IT_DUTY).length, 1);
+});
+
+test('전산 부담당은 경영지원팀 팀장 1명 (정/부 체제)', () => {
+  const backups = data.employees.filter((e) => e.duty === IT_BACKUP_DUTY);
+  assert.equal(backups.length, 1);
+  assert.equal(backups[0].empNo, IT_BACKUP_EMP_NO);
+  assert.equal(backups[0].deptCode, 'MGMT');
+  assert.equal(backups[0].isTeamLead, true);
 });

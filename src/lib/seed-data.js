@@ -40,6 +40,13 @@ export const PERSONA_EMP_NO = Object.freeze({
   employee: 'DT-0009',
 });
 
+// 전산 부담당: 경영지원팀 팀장. 정담당자 휴가·부재 때 티켓을 넘겨받는다 (정/부 체제)
+export const IT_BACKUP_DUTY = '전산 부담당';
+export const IT_BACKUP_EMP_NO = 'DT-0003';
+
+// 헬프데스크 담당자 후보가 되는 담당 업무
+export const ASSIGNEE_DUTIES = Object.freeze([IT_DUTY, IT_BACKUP_DUTY]);
+
 const SURNAMES = ['김', '이', '박', '최', '정', '강', '조', '윤', '장', '임', '한', '오', '서', '신', '권', '황', '안', '송', '류', '전'];
 const GIVEN_FIRST = ['민', '서', '지', '현', '수', '예', '도', '하', '준', '유', '승', '은', '태', '재', '성', '다', '소', '건', '시', '나'];
 const GIVEN_SECOND = ['준', '연', '우', '진', '아', '호', '윤', '빈', '원', '희', '훈', '린', '혁', '경', '율', '영', '람', '석', '결', '온'];
@@ -145,7 +152,7 @@ export function generateSeedData(seed = DEFAULT_SEED) {
         deptCode: dept.code,
         jobTitle,
         isTeamLead: !dept.fixedTitles && i === 0,
-        duty: empNo === PERSONA_EMP_NO.it_admin ? IT_DUTY : null,
+        duty: empNo === PERSONA_EMP_NO.it_admin ? IT_DUTY : empNo === IT_BACKUP_EMP_NO ? IT_BACKUP_DUTY : null,
         hireDate: randomHireDate(rng, jobTitle),
         extension: String(extensionCounter[dept.siteCode]),
       });

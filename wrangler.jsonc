@@ -31,6 +31,13 @@
     "crons": ["30 19 * * *"]
   },
 
+  // 공개 설정값 (비밀 아님)
+  "vars": {
+    // B(Uptime Monitor) 주소. 헬프데스크 티켓의 장애 링크가 이 주소로 시작하는지 검사한다.
+    // 2단계에서는 링크만 저장하고 B를 호출하지 않는다.
+    "UPTIME_MONITOR_BASE_URL": "https://status-monitor.nalzzoaleph26.workers.dev"
+  },
+
   // 비밀 값(ADMIN_TOKEN)은 여기에 쓰지 않는다.
   // 로컬: .dev.vars / 배포: npx wrangler secret put ADMIN_TOKEN
 

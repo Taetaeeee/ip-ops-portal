@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FAQ · 도담테크산업 IT 운영 포털 (시뮬레이션)</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="sim-banner" role="note">
+    <strong>시뮬레이션</strong>
+    가상 회사 ‘도담테크산업’의 데모입니다. 실제 회사·인물·시스템과 관계없으며, 데이터는 매일 04:30(KST)에 초기화됩니다.
+  </div>
+
+  <header class="topbar">
+    <div class="brand">도담테크산업 <span>IT 운영 포털</span></div>
+    <nav class="mainnav" aria-label="주 메뉴">
+      <a href="/app" data-nav="home">홈</a>
+      <a href="/tickets" data-nav="tickets">헬프데스크</a>
+      <a href="/faq" data-nav="faq">FAQ</a>
+    </nav>
+    <div class="user">
+      <span id="user-info" class="muted">불러오는 중…</span>
+      <button type="button" id="logout" class="link-button">로그아웃</button>
+    </div>
+  </header>
+
+  <main class="content narrow">
+    <div class="page-head">
+      <h2>FAQ · 사용자 매뉴얼</h2>
+      <a class="button" href="/ticket-new">해결 안 되면 요청 접수</a>
+    </div>
+    <p class="muted small">IT 담당자가 실제 처리한 요청을 바탕으로 정리한 자주 묻는 질문입니다.</p>
+
+    <div class="filters">
+      <label class="grow">검색 <input type="search" id="faq-search" placeholder="예: VPN, 계정 잠김"></label>
+      <label>분류 <select id="faq-category"></select></label>
+    </div>
+
+    <p id="faq-error" class="error" role="alert" hidden></p>
+    <p id="faq-count" class="muted"></p>
+    <div id="faq-list" class="stack"></div>
+  </main>
+
+  <script type="module" src="/js/faq.js"></script>
+</body>
+</html>

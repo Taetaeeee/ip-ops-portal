@@ -11,6 +11,7 @@ import {
 } from './lib/session.js';
 import { PERSONA_EMP_NO } from './lib/seed-data.js';
 import { randomTokenHex, sha256Hex, constantTimeEqual } from './lib/crypto-util.js';
+import { error } from './http.js';
 
 /**
  * 세션을 만든다. persona 는 호출 전에 isValidPersona 로 검증돼 있어야 한다.
@@ -80,6 +81,24 @@ export async function deleteSession(env, request) {
   const token = tokenFromRequest(request);
   if (!token) return;
   await env.DB.prepare('DELETE FROM sessions WHERE token_hash = ?').bind(await sha256Hex(token)).run();
+}
+
+/** IT 담당자 페르소나인지 (서버에서 권한을 판단하는 유일한 기준) */
+export function isItStaff(session) {
+  return session?.persona === 'it_admin';
+}
+
+/**
+ * 로그인 필수 도우미.
+ * @returns {Promise<{session: object} | {response: Response}>}
+ */
+export async function requireSession(env, request, { itStaffOnly = false } = {}) {
+  const session = await getSession(env, request);
+  if (!session) return { response: error(401, 'UNAUTHENTICATED', '로그인이 필요합니다') };
+  if (itStaffOnly && !isItStaff(session)) {
+    return { response: error(403, 'FORBIDDEN', 'IT 담당자만 할 수 있는 작업입니다') };
+  }
+  return { session };
 }
 
 /**

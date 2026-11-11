@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>헬프데스크 · 도담테크산업 IT 운영 포털 (시뮬레이션)</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="sim-banner" role="note">
+    <strong>시뮬레이션</strong>
+    가상 회사 ‘도담테크산업’의 데모입니다. 실제 회사·인물·시스템과 관계없으며, 데이터는 매일 04:30(KST)에 초기화됩니다.
+  </div>
+
+  <header class="topbar">
+    <div class="brand">도담테크산업 <span>IT 운영 포털</span></div>
+    <nav class="mainnav" aria-label="주 메뉴">
+      <a href="/app" data-nav="home">홈</a>
+      <a href="/tickets" data-nav="tickets">헬프데스크</a>
+      <a href="/faq" data-nav="faq">FAQ</a>
+    </nav>
+    <div class="user">
+      <span id="user-info" class="muted">불러오는 중…</span>
+      <button type="button" id="logout" class="link-button">로그아웃</button>
+    </div>
+  </header>
+
+  <main class="content">
+    <div class="page-head">
+      <h2 id="page-title">헬프데스크</h2>
+      <a class="button primary" href="/ticket-new">새 요청 접수</a>
+    </div>
+
+    <form id="filters" class="filters" hidden>
+      <label>상태 <select name="status"></select></label>
+      <label>분류 <select name="category"></select></label>
+      <label>긴급도 <select name="priority"></select></label>
+      <label>담당자 <select name="assignee"></select></label>
+      <label>SLA <select name="sla"></select></label>
+      <label class="grow">검색 <input type="search" name="q" maxlength="100" placeholder="제목·증상"></label>
+      <button type="submit" class="button">조회</button>
+    </form>
+
+    <p id="sla-note" class="muted small"></p>
+    <p id="list-error" class="error" role="alert" hidden></p>
+    <p id="count" class="muted"></p>
+    <div class="table-wrap">
+      <table id="ticket-table" class="tickets"></table>
+    </div>
+  </main>
+
+  <script type="module" src="/js/tickets.js"></script>
+</body>
+</html>
